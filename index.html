@@ -949,255 +949,271 @@ async function markMessagesAsRead() {
 }
     async function loadMessages() {
 
-      const {
-        data: { user }
-      } =
-        await supabaseClient.auth.getUser();
+  const {
+    data: { user }
+  } =
+    await supabaseClient.auth.getUser();
+
+  const { data, error } =
+    await supabaseClient
+      .from("messages")
+      .select("*")
+      .order(
+        "created_at",
+        { ascending: true }
+      );
+
+  if (error) {
+    console.log("LOAD MESSAGES ERROR:", error);
+    return;
+  }
+
+  const container =
+    document.getElementById("messages");
+
+  container.innerHTML = "";
+
+  data.forEach(item => {
+
+    // Message row
+
+    const row =
+      document.createElement("div");
+
+    const isMine =
+      user &&
+      item.user_id === user.id;
+
+    row.className =
+      "message-row" +
+      (isMine ? " mine" : "");
 
 
-      const { data, error } =
-        await supabaseClient
-          .from("messages")
-          .select("*")
-          .order(
-            "created_at",
-            { ascending: true }
-          );
+    // Avatar
+
+    const avatar =
+      document.createElement("div");
+
+    avatar.className =
+      "avatar";
+
+    const username =
+      item.username || "User";
+
+    if (item.avatar_url) {
+
+      const image =
+        document.createElement("img");
+
+      image.src =
+        item.avatar_url;
+
+      image.alt =
+        username;
+
+      image.style.width =
+        "100%";
+
+      image.style.height =
+        "100%";
+
+      image.style.borderRadius =
+        "50%";
+
+      image.style.objectFit =
+        "cover";
+
+      avatar.appendChild(image);
+
+    } else {
+
+      avatar.textContent =
+        username
+          .charAt(0)
+          .toUpperCase();
+    }
 
 
-      if (error) {
+    // Online indicator
 
-        console.log(error);
+    const onlineDot =
+      document.createElement("div");
 
-        return;
-      }
+    onlineDot.className =
+      "online-dot";
 
-
-      const container =
-        document.getElementById("messages");
-
-      container.innerHTML = "";
-
-
-      data.forEach(item => {
-
-        // Message row
-
-        const row =
-          document.createElement("div");
+    avatar.appendChild(
+      onlineDot
+    );
 
 
-        const isMine =
-          user &&
-          item.user_id === user.id;
+    // Message content
+
+    const content =
+      document.createElement("div");
+
+    content.className =
+      "message-content";
 
 
-        row.className =
-          "message-row" +
-          (isMine ? " mine" : "");
+    // Username
+
+    const name =
+      document.createElement("div");
+
+    name.className =
+      "message-username";
+
+    name.textContent =
+      username;
 
 
-        // Avatar
+    // Message bubble
 
-        const avatar =
-          document.createElement("div");
+    const bubble =
+      document.createElement("div");
 
-        avatar.className =
-          "avatar";
-
-
-        const username =
-          item.username || "User";
+    bubble.className =
+      "message";
 
 
-       if (item.avatar_url) {
-  const image =
-    document.createElement("img");
+    // Message text
 
-  image.src = item.avatar_url;
-  image.alt = username;
+    const text =
+      document.createElement("div");
 
-  image.style.width = "100%";
-  image.style.height = "100%";
-  image.style.borderRadius = "50%";
-  image.style.objectFit = "cover";
+    text.className =
+      "message-text";
 
-  avatar.appendChild(image);
-} else {
-  avatar.textContent =
-    username.charAt(0).toUpperCase();
-}
+    text.textContent =
+      item.message || "";
+
+    bubble.appendChild(text);
 
 
-        // Online indicator
+    // Edited label
 
-        const onlineDot =
-          document.createElement("div");
+    if (item.edited_at) {
 
-        onlineDot.className =
-          "online-dot";
+      const edited =
+        document.createElement("span");
 
-        avatar.appendChild(
-          onlineDot
+      edited.textContent =
+        " (edited)";
+
+      edited.className =
+        "edited-label";
+
+      text.appendChild(edited);
+    }
+
+
+    // Time
+
+    const time =
+      document.createElement("div");
+
+    time.className =
+      "message-time";
+
+    time.textContent =
+      new Date(item.created_at)
+        .toLocaleTimeString(
+          [],
+          {
+            hour: "numeric",
+            minute: "2-digit"
+          }
         );
 
 
-        // Message content
+    // Add message pieces
 
-        const content =
-          document.createElement("div");
+    content.appendChild(name);
 
-        content.className =
-          "message-content";
+    content.appendChild(bubble);
 
-
-        // Username
-
-        const name =
-          document.createElement("div");
-
-        name.className =
-          "message-username";
-
-        name.textContent =
-          username;
+    content.appendChild(time);
 
 
-        // Message bubble
+    // Edit button
 
-        const bubble =
-          document.createElement("div");
+    if (isMine) {
 
-        bubble.className =
-          "message";
+      const editButton =
+        document.createElement("button");
 
+      editButton.textContent =
+        "✏️ Edit";
 
-        // Message text
+      editButton.className =
+        "edit-button";
 
-        const text =
-          document.createElement("div");
+      editButton.onclick = () => {
 
-        text.className =
-          "message-text";
+        editMessage(
+          item.id,
+          item.message
+        );
 
-        text.textContent =
-  item.message || "";
+      };
 
-bubble.appendChild(text);
-
-
-// Edited label
-
-if (item.edited_at) {
-
-  const edited =
-    document.createElement("span");
-
-  edited.textContent =
-    " (edited)";
-
-  edited.className =
-    "edited-label";
-
-  text.appendChild(edited);
-}
-
-        // Time
-
-        const time =
-          document.createElement("div");
-
-        time.className =
-          "message-time";
-
-
-        time.textContent =
-          new Date(item.created_at)
-            .toLocaleTimeString(
-              [],
-              {
-                hour: "numeric",
-                minute: "2-digit"
-              }
-            );
-
-
-        // Put everything together
-content.appendChild(name);
-
-content.appendChild(bubble);
-
-content.appendChild(time);
-
-
-// Edit button
-
-if (isMine) {
-
-  const editButton =
-    document.createElement("button");
-
-  editButton.textContent =
-    "✏️ Edit";
-
-  editButton.className =
-    "edit-button";
-
-  editButton.onclick = () => {
-    editMessage(
-      item.id,
-      item.message
-    );
-  };
-
-  content.appendChild(editButton);
-}
-
-
-// Read receipt
-
-if (isMine) {
-
-  const receipt =
-    document.createElement("div");
-
-  receipt.className =
-    "read-receipt";
-
-  if (item.read_at) {
-
-    receipt.textContent =
-      "✓✓ Read";
-
-    receipt.style.color =
-      "#57f287";
-
-  } else {
-
-    receipt.textContent =
-      "✓ Sent";
-
-  }
-
-  content.appendChild(receipt);
-}
-
-        row.appendChild(avatar);
-
-        row.appendChild(content);
-
-
-        container.appendChild(row);
-
-      });
-
-
-      // Scroll to newest message
-
-      container.scrollTop =
-        container.scrollHeight;
+      content.appendChild(
+        editButton
+      );
     }
 
+
+    // Read receipt
+
+    if (isMine) {
+
+      const receipt =
+        document.createElement("div");
+
+      receipt.className =
+        "read-receipt";
+
+      if (item.read_at) {
+
+        receipt.textContent =
+          "✓✓ Read";
+
+        receipt.style.color =
+          "#57f287";
+
+      } else {
+
+        receipt.textContent =
+          "✓ Sent";
+      }
+
+      content.appendChild(
+        receipt
+      );
+    }
+
+
+    row.appendChild(
+      avatar
+    );
+
+    row.appendChild(
+      content
+    );
+
+    container.appendChild(
+      row
+    );
+
+  });
+
+
+  // Scroll to newest message
+
+  container.scrollTop =
+    container.scrollHeight;
+}
 
     // ==============================
     // SHOW CHAT
