@@ -936,6 +936,73 @@ body {
   font-size: 15px;
   font-weight: 600;
 }
+    #privateMessages {
+  height: 350px;
+  overflow-y: auto;
+  padding: 10px;
+  margin-top: 10px;
+  background: #1e1f22;
+  border-radius: 8px;
+}
+
+.private-chat-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.private-chat-header button {
+  background: #2b2d31;
+  color: white;
+  border: 1px solid #40444b;
+  border-radius: 6px;
+  padding: 6px 10px;
+  cursor: pointer;
+}
+
+.private-chat-header span {
+  font-weight: bold;
+}
+
+.private-message {
+  width: fit-content;
+  max-width: 75%;
+  background: #2b2d31;
+  color: white;
+  padding: 8px 10px;
+  margin-bottom: 6px;
+  border-radius: 10px;
+}
+
+.private-message.mine {
+  margin-left: auto;
+  background: #5865f2;
+}
+
+.private-send-area {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.private-send-area input {
+  flex: 1;
+  padding: 10px;
+  background: #1e1f22;
+  color: white;
+  border: 1px solid #40444b;
+  border-radius: 8px;
+}
+
+.private-send-area button {
+  padding: 10px 14px;
+  background: #5865f2;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
     
   </style>
 </head>
@@ -1084,8 +1151,44 @@ body {
     <h2>💬 Private Chats</h2>
 
     <div id="privateUserList">
-      Loading users...
-    </div>
+  Loading users...
+</div>
+
+<div
+  id="privateConversation"
+  style="display: none;"
+>
+
+  <div class="private-chat-header">
+
+    <button onclick="backToPrivateUsers()">
+      ←
+    </button>
+
+    <span id="privateChatUsername">
+      Private Chat
+    </span>
+
+  </div>
+
+  <div id="privateMessages"></div>
+
+  <div class="private-send-area">
+
+    <input
+      id="privateMessageInput"
+      type="text"
+      placeholder="Message..."
+      autocomplete="off"
+    >
+
+    <button onclick="sendPrivateMessage()">
+      ➤
+    </button>
+
+  </div>
+
+</div>
 
     <div class="profile-buttons">
 
@@ -2903,6 +3006,185 @@ async function loadPrivateUsers() {
     userList.appendChild(button);
 
   });
+
+}
+    async function openPrivateChat(
+  userId,
+  username
+) {
+
+  currentPrivateUser = {
+    id: userId,
+    username: username
+  };
+
+  document.getElementById(
+    "privateUserList"
+  ).style.display = "none";
+
+  document.getElementById(
+    "privateConversation"
+  ).style.display = "block";
+
+  document.getElementById(
+    "privateChatUsername"
+  ).textContent = username;
+
+  await loadPrivateMessages();
+
+}
+
+
+function backToPrivateUsers() {
+
+  currentPrivateUser = null;
+
+  document.getElementById(
+    "privateConversation"
+  ).style.display = "none";
+
+  document.getElementById(
+    "privateUserList"
+  ).style.display = "block";
+
+}
+
+
+async function loadPrivateMessages() {
+
+  if (!currentPrivateUser) {
+    return;
+  }
+
+  const {
+    data: { user }
+  } =
+    await supabaseClient.auth.getUser();
+
+  if (!user) {
+    return;
+  }
+
+  const {
+    data,
+    error
+  } =
+    await supabaseClient
+      .from("private_messages")
+      .select("*")
+      .or(
+        `and(sender_id.eq.${user.id},receiver_id.eq.${currentPrivateUser.id}),and(sender_id.eq.${currentPrivateUser.id},receiver_id.eq.${user.id})`
+      )
+      .order("created_at", {
+        ascending: true
+      });
+
+
+  if (error) {
+
+    console.log(
+      "Private messages error:",
+      error
+    );
+
+    return;
+  }
+
+
+  const container =
+    document.getElementById(
+      "privateMessages"
+    );
+
+  container.innerHTML = "";
+
+
+  data.forEach(item => {
+
+    const message =
+      document.createElement("div");
+
+    message.className =
+      item.sender_id === user.id
+        ? "private-message mine"
+        : "private-message";
+
+
+    message.textContent =
+      item.message;
+
+
+    container.appendChild(message);
+
+  });
+
+
+  container.scrollTop =
+    container.scrollHeight;
+
+}
+
+
+async function sendPrivateMessage() {
+
+  const input =
+    document.getElementById(
+      "privateMessageInput"
+    );
+
+  const text =
+    input.value.trim();
+
+
+  if (!text || !currentPrivateUser) {
+    return;
+  }
+
+
+  const {
+    data: { user }
+  } =
+    await supabaseClient.auth.getUser();
+
+
+  if (!user) {
+    return;
+  }
+
+
+  const {
+    error
+  } =
+    await supabaseClient
+      .from("private_messages")
+      .insert({
+
+        sender_id: user.id,
+
+        receiver_id:
+          currentPrivateUser.id,
+
+        message: text
+
+      });
+
+
+  if (error) {
+
+    alert(
+      "PRIVATE MESSAGE ERROR:\n\n" +
+      error.message
+    );
+
+    console.log(error);
+
+    return;
+  }
+
+
+  input.value = "";
+
+  await loadPrivateMessages();
 
 }
  
