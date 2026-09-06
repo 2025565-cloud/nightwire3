@@ -1010,7 +1010,22 @@ body {
   margin-top: -4px;
   margin-bottom: 5px;
 }
-    
+
+    .private-delete-button {
+  margin-left: 8px;
+  padding: 3px 6px;
+  background: transparent;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  opacity: 0.7;
+}
+
+.private-delete-button:hover {
+  background: #40444b;
+  opacity: 1;
+}
   </style>
 </head>
 
@@ -3060,88 +3075,90 @@ function backToPrivateUsers() {
 
 
 async function loadPrivateMessages() {
+  if (!currentPrivateUser) return;
 
-  if (!currentPrivateUser) {
-    return;
-  }
-
-  const {
-    data: { user }
-  } =
+  const { data: { user } } =
     await supabaseClient.auth.getUser();
 
-  if (!user) {
-    return;
-  }
+  if (!user) return;
 
-  const {
-    data,
-    error
-  } =
+  const { data, error } =
     await supabaseClient
       .from("private_messages")
       .select("*")
       .or(
         `and(sender_id.eq.${user.id},receiver_id.eq.${currentPrivateUser.id}),and(sender_id.eq.${currentPrivateUser.id},receiver_id.eq.${user.id})`
       )
-      .order("created_at", {
-        ascending: true
-      });
+      .order("created_at", { ascending: true });
 
   if (error) {
-
-    console.log(
-      "Private messages error:",
-      error
-    );
-
+    console.log("Private messages error:", error);
     return;
   }
 
   const container =
-    document.getElementById(
-      "privateMessages"
-    );
+    document.getElementById("privateMessages");
 
   container.innerHTML = "";
 
   data.forEach(item => {
-
-    const message =
-      document.createElement("div");
+    const message = document.createElement("div");
 
     message.className =
       item.sender_id === user.id
         ? "private-message mine"
         : "private-message";
 
-    message.textContent =
-      item.message;
+    message.textContent = item.message;
+
+    // Delete button for your own messages
+    if (item.sender_id === user.id) {
+      const deleteButton =
+        document.createElement("button");
+
+      deleteButton.textContent = "🗑️";
+      deleteButton.className =
+        "private-delete-button";
+
+      deleteButton.onclick = () =>
+        deletePrivateMessage(item.id);
+
+      message.appendChild(deleteButton);
+    }
 
     container.appendChild(message);
 
-    // Show read receipt on your messages
-    if (
-      item.sender_id === user.id &&
-      item.read_at
-    ) {
-
+    if (item.sender_id === user.id && item.read_at) {
       const read =
         document.createElement("div");
 
       read.className =
         "private-read-receipt";
 
-      read.textContent =
-        "✓ Read";
+      read.textContent = "✓ Read";
 
       container.appendChild(read);
     }
-
   });
 
   container.scrollTop =
     container.scrollHeight;
+
+  const unreadMessages =
+    data.filter(item =>
+      item.receiver_id === user.id &&
+      !item.read_at
+    );
+
+  for (const item of unreadMessages) {
+    await supabaseClient
+      .from("private_messages")
+      .update({
+        read_at: new Date().toISOString()
+      })
+      .eq("id", item.id);
+  }
+}
 
   // Mark received messages as read
   const unreadMessages =
@@ -3251,6 +3268,36 @@ function startPrivateRealtime() {
         }
       )
       .subscribe();
+}
+async function deletePrivateMessage(messageId) {
+  const confirmed = confirm(
+    "Delete this private message?"
+  );
+
+  if (!confirmed) return;
+
+  const { data: { user } } =
+    await supabaseClient.auth.getUser();
+
+  if (!user) return;
+
+  const { error } =
+    await supabaseClient
+      .from("private_messages")
+      .delete()
+      .eq("id", messageId)
+      .eq("sender_id", user.id);
+
+  if (error) {
+    alert(
+      "DELETE ERROR:\n\n" +
+      error.message
+    );
+    console.log(error);
+    return;
+  }
+
+  await loadPrivateMessages();
 }
     
   </script>
