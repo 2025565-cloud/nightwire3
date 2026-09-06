@@ -859,7 +859,37 @@ async function sendMessage() {
 
   loadMessages();
 }
+async function sendMessage() {
+  // your existing sendMessage code...
+}
 
+async function markMessagesAsRead() {
+
+  const {
+    data: { user }
+  } =
+    await supabaseClient.auth.getUser();
+
+  if (!user) {
+    return;
+  }
+
+  const { error } =
+    await supabaseClient
+      .from("messages")
+      .update({
+        read_at: new Date().toISOString()
+      })
+      .is("read_at", null)
+      .neq("user_id", user.id);
+
+  if (error) {
+    console.log(
+      "Read receipt error:",
+      error
+    );
+  }
+}
     async function loadMessages() {
 
       const {
