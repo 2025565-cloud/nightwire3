@@ -1026,6 +1026,89 @@ body {
   background: #40444b;
   opacity: 1;
 }
+
+    .private-call-buttons {
+  display: flex;
+  gap: 6px;
+  margin-left: auto;
+}
+
+.private-call-buttons button {
+  background: #2b2d31;
+  color: white;
+  border: 1px solid #40444b;
+  border-radius: 6px;
+  padding: 6px 9px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.private-call-buttons button:hover {
+  background: #40444b;
+}
+    .call-panel {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.call-box {
+  width: min(900px, 95vw);
+  background: #1e1f22;
+  border: 1px solid #40444b;
+  border-radius: 12px;
+  padding: 20px;
+  text-align: center;
+}
+
+.call-box h2 {
+  margin-top: 0;
+  color: white;
+}
+
+#remoteVideo {
+  width: 100%;
+  max-height: 60vh;
+  background: #000;
+  border-radius: 10px;
+  object-fit: contain;
+}
+
+#localVideo {
+  width: 180px;
+  height: 130px;
+  background: #000;
+  border-radius: 10px;
+  object-fit: cover;
+  position: absolute;
+  right: 30px;
+  bottom: 100px;
+  border: 2px solid white;
+}
+
+.call-controls {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.call-controls button {
+  padding: 10px 14px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  background: #2b2d31;
+  color: white;
+}
+
+.end-call-button {
+  background: #d83c3e !important;
+}
   </style>
 </head>
 
@@ -1182,17 +1265,32 @@ body {
 >
 
   <div class="private-chat-header">
+  <button onclick="backToPrivateUsers()">
+    ←
+  </button>
 
-    <button onclick="backToPrivateUsers()">
-      ←
+  <span id="privateChatUsername">
+    Private Chat
+  </span>
+
+  <div class="private-call-buttons">
+    <button
+      type="button"
+      onclick="startVoiceCall()"
+      title="Voice call"
+    >
+      📞
     </button>
 
-    <span id="privateChatUsername">
-      Private Chat
-    </span>
-
+    <button
+      type="button"
+      onclick="startVideoCall()"
+      title="Video call"
+    >
+      📹
+    </button>
   </div>
-
+</div>
   <div id="privateMessages"></div>
 
   <div class="private-send-area">
@@ -3301,7 +3399,54 @@ async function deletePrivateMessage(messageId) {
 }
     
   </script>
+  
+<div id="callPanel" class="call-panel" style="display: none;">
+  <div class="call-box">
 
+    <h2 id="callTitle">📞 Calling...</h2>
+
+    <video
+      id="remoteVideo"
+      autoplay
+      playsinline
+    ></video>
+
+    <video
+      id="localVideo"
+      autoplay
+      muted
+      playsinline
+    ></video>
+
+    <div class="call-controls">
+      <button
+        type="button"
+        onclick="toggleMute()"
+        id="muteButton"
+      >
+        🎙️ Mute
+      </button>
+
+      <button
+        type="button"
+        onclick="toggleCamera()"
+        id="cameraButton"
+      >
+        📷 Camera
+      </button>
+
+      <button
+        type="button"
+        onclick="endCall()"
+        class="end-call-button"
+      >
+        ☎️ End
+      </button>
+    </div>
+
+  </div>
+</div>
+  
 </body>
  </html> 
 </html>
