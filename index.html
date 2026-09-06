@@ -453,58 +453,69 @@
   <div id="chat">
 
     <!-- Header -->
+<div class="chat-header">
 
-    <div class="chat-header">
+  <div class="server-icon">
+    M
+  </div>
 
-      <div class="server-icon">
-        M
-      </div>
+  <div class="chat-info">
 
-      <div class="chat-info">
-
-        <div class="chat-title">
-          Main Chat
-        </div>
-
-        <div class="chat-status">
-          ● Online
-        </div>
-
-      </div>
-
-      <button
-        class="logout-button"
-        onclick="logOut()"
-      >
-        Log Out
-      </button>
-
+    <div class="chat-title">
+      Main Chat
     </div>
 
-
-    <!-- Messages -->
-
-    <div id="messages"></div>
-
-
-    <!-- Message Input -->
-
-    <div class="send-area">
-
-      <input
-        id="messageInput"
-        type="text"
-        placeholder="Message #main-chat..."
-        autocomplete="off"
-      >
-}
-      <button onclick="sendMessage()">
-        ➤
-      </button>
-
+    <div class="chat-status">
+      ● Online
     </div>
 
   </div>
+
+  <div class="profile-setup">
+    <input
+      id="avatarInput"
+      type="file"
+      accept="image/*"
+    >
+
+    <button onclick="uploadAvatar()">
+      📸
+    </button>
+  </div>
+
+  <button
+    class="logout-button"
+    onclick="logOut()"
+  >
+    Log Out
+  </button>
+
+</div>
+
+
+<!-- Messages -->
+
+<div id="messages"></div>
+
+
+<!-- Message Input -->
+
+<div class="send-area">
+
+  <input
+    id="messageInput"
+    type="text"
+    placeholder="Message #main-chat..."
+    autocomplete="off"
+  >
+
+  <button onclick="sendMessage()">
+    ➤
+  </button>
+
+</div>
+
+</div>
 
 
   <!-- =========================
@@ -583,6 +594,22 @@ async function uploadAvatar() {
     return;
   }
 
+  const { data: publicUrlData } =
+    supabaseClient.storage
+      .from("avatars")
+      .getPublicUrl(fileName);
+
+  const avatarUrl =
+    publicUrlData.publicUrl;
+
+  localStorage.setItem(
+    "avatarUrl",
+    avatarUrl
+  );
+
+  statusText.textContent =
+    "Profile picture uploaded! 📸";
+}
   statusText.textContent =
     "Profile picture uploaded! 📸";
 }
