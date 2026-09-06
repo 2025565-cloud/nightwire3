@@ -1382,34 +1382,71 @@ async function loadMessages() {
     content.appendChild(time);
 
 
-    // Edit button
+   // Edit and Delete buttons
 
-    if (isMine) {
+if (isMine) {
 
-      const editButton =
-        document.createElement("button");
+  const actions =
+    document.createElement("div");
 
-      editButton.textContent =
-        "✏️ Edit";
+  actions.className =
+    "message-actions";
 
-      editButton.className =
-        "edit-button";
 
-      editButton.onclick = () => {
+  // Edit button
 
-        editMessage(
-          item.Id,
-          item.message
-        );
+  const editButton =
+    document.createElement("button");
 
-      };
+  editButton.textContent =
+    "✏️ Edit";
 
-      content.appendChild(
-        editButton
-      );
+  editButton.className =
+    "edit-button";
 
-    }
+  editButton.onclick = () => {
 
+    editMessage(
+      item.Id,
+      item.message
+    );
+
+  };
+
+
+  // Delete button
+
+  const deleteButton =
+    document.createElement("button");
+
+  deleteButton.textContent =
+    "🗑️ Delete";
+
+  deleteButton.className =
+    "delete-button";
+
+  deleteButton.onclick = () => {
+
+    deleteMessage(
+      item.Id
+    );
+
+  };
+
+
+  actions.appendChild(
+    editButton
+  );
+
+  actions.appendChild(
+    deleteButton
+  );
+
+  content.appendChild(
+    actions
+  );
+
+}
 
     // Read receipt
 
