@@ -989,6 +989,20 @@ body {
     autocomplete="off"
   >
 
+  <input
+    id="imageInput"
+    type="file"
+    accept="image/*"
+    style="display: none;"
+  >
+
+  <button
+    onclick="document.getElementById('imageInput').click()"
+    class="image-button"
+  >
+    📷
+  </button>
+
   <button onclick="sendMessage()">
     ➤
   </button>
