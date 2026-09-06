@@ -525,6 +525,10 @@ const supabaseClient =
 
     const statusText =
       document.getElementById("status");
+    window.addEventListener("error", function(event) {
+  statusText.textContent =
+    "JavaScript error: " + event.message;
+});
 
 
     async function signUp() {
