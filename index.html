@@ -862,8 +862,8 @@ async function sendMessage() {
 
   clearTimeout(typingTimeout);
 
-  setTyping(false);
-
+  await setTyping(false);
+  
   loadMessages();
 }
 if (error) {
