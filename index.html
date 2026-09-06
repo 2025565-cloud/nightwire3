@@ -590,7 +590,11 @@ async function loadMessages() {
   container.scrollTop =
     container.scrollHeight;
 }
-
+function showChat() {
+  authScreen.style.display = "none";
+  chatScreen.style.display = "flex";
+  loadMessages();
+}
     function showLogin() {
       authScreen.style.display = "block";
       chatScreen.style.display = "none";
