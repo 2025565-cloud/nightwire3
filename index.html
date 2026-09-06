@@ -1812,7 +1812,7 @@ async function loadMessages() {
   container.innerHTML = "";
 
 
-  data.forEach(item => {
+ data.forEach(async item => {
 
     const row =
       document.createElement("div");
@@ -2338,7 +2338,7 @@ document
     }
   );
 
-    async function addReaction(
+   async function toggleReaction(
   messageId,
   reaction
 ) {
@@ -2352,7 +2352,39 @@ document
     return;
   }
 
-  const { error } =
+  const {
+    data: existingReaction,
+    error: findError
+  } =
+    await supabaseClient
+      .from("message_reactions")
+      .select("id")
+      .eq("message_id", messageId)
+      .eq("user_id", user.id)
+      .eq("reaction", reaction);
+
+  if (findError) {
+
+    console.log(
+      "Reaction check error:",
+      findError
+    );
+
+    return;
+  }
+
+  if (
+    existingReaction &&
+    existingReaction.length > 0
+  ) {
+
+    await supabaseClient
+      .from("message_reactions")
+      .delete()
+      .eq("id", existingReaction[0].id);
+
+  } else {
+
     await supabaseClient
       .from("message_reactions")
       .insert({
@@ -2361,19 +2393,12 @@ document
         reaction: reaction
       });
 
-  if (error) {
-
-    console.log(
-      "Reaction error:",
-      error
-    );
-
-    return;
   }
 
   loadMessages();
 }
-    
+
+ 
   </script>
 
 </body>
