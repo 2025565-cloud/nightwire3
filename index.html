@@ -885,6 +885,18 @@ body {
   font-size: 14px;
   cursor: pointer;
 }
+    .replied-message {
+  background: #2b2d31;
+  border-left: 3px solid #5865f2;
+  padding: 6px 9px;
+  margin-bottom: 7px;
+  border-radius: 6px;
+  font-size: 12px;
+  opacity: 0.85;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
     
   </style>
 </head>
@@ -2140,7 +2152,34 @@ const avatarUrl =
 
     bubble.className =
       "message";
+// ==============================
+// SHOW REPLIED-TO MESSAGE
+// ==============================
 
+if (item.reply_to) {
+
+  const repliedMessage =
+    data.find(
+      msg => msg.Id === item.reply_to
+    );
+
+  if (repliedMessage) {
+
+    const replyBox =
+      document.createElement("div");
+
+    replyBox.className =
+      "replied-message";
+
+    replyBox.textContent =
+      "↩️ " +
+      (repliedMessage.username || "User") +
+      ": " +
+      (repliedMessage.message || "📷 Image");
+
+    bubble.appendChild(replyBox);
+  }
+}
 
     const text =
       document.createElement("div");
