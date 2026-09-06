@@ -2075,10 +2075,14 @@ const avatarUrl =
     "none";
 
   requestNotifications();
-      
+
+  unreadCount = 0;
+
+  updateTabTitle();
+
   chatScreen.style.display =
     "flex";
-
+      
   markMessagesAsRead();
 
   loadMessages();
