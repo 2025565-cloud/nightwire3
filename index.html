@@ -2018,24 +2018,11 @@ const reactions = [
   "😢"
 ];
 
-const {
-  data: reactionData,
-  error: reactionError
-} =
-  await supabaseClient
-    .from("message_reactions")
-    .select("*")
-    .eq("message_id", item.Id);
-
-if (reactionError) {
-
-  console.log(
-    "Reaction load error:",
-    reactionError
+const reactionData =
+  (allReactions || []).filter(
+    r => r.message_id === item.Id
   );
-
-}
-
+   
 reactions.forEach(reaction => {
 
   const count =
