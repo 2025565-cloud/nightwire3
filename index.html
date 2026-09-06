@@ -5,10 +5,39 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>My Messaging Website</title>
 
-  <!-- Supabase -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  async function sendMessage() {
+ <!-- Supabase -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
+<script>
+async function sendMessage() {
+  const { data: { user } } = await supabaseClient.auth.getUser();
+
+  if (!user) {
+    alert("You must be logged in.");
+    return;
+  }
+
+  const input = document.getElementById("messageInput");
+  const text = input.value.trim();
+
+  if (!text) return;
+
+  const { error } = await supabaseClient
+    .from("messages")
+    .insert({
+      user_id: user.id,
+      username: user.email.split("@")[0],
+      message: text
+    });
+
+  if (error) {
+    alert(error.message);
+    return;
+  }
+
+  input.value = "";
+}
+</script>
   <style>
     * { box-sizing: border-box; }
 
