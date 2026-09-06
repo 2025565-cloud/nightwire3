@@ -1003,6 +1003,13 @@ body {
   border-radius: 8px;
   cursor: pointer;
 }
+    .private-read-receipt {
+  text-align: right;
+  font-size: 11px;
+  opacity: 0.65;
+  margin-top: -4px;
+  margin-bottom: 5px;
+}
     
   </style>
 </head>
@@ -3081,7 +3088,6 @@ async function loadPrivateMessages() {
         ascending: true
       });
 
-
   if (error) {
 
     console.log(
@@ -3092,14 +3098,12 @@ async function loadPrivateMessages() {
     return;
   }
 
-
   const container =
     document.getElementById(
       "privateMessages"
     );
 
   container.innerHTML = "";
-
 
   data.forEach(item => {
 
@@ -3111,21 +3115,53 @@ async function loadPrivateMessages() {
         ? "private-message mine"
         : "private-message";
 
-
     message.textContent =
       item.message;
 
-
     container.appendChild(message);
 
-  });
+    // Show read receipt on your messages
+    if (
+      item.sender_id === user.id &&
+      item.read_at
+    ) {
 
+      const read =
+        document.createElement("div");
+
+      read.className =
+        "private-read-receipt";
+
+      read.textContent =
+        "✓ Read";
+
+      container.appendChild(read);
+    }
+
+  });
 
   container.scrollTop =
     container.scrollHeight;
 
-}
+  // Mark received messages as read
+  const unreadMessages =
+    data.filter(item =>
+      item.receiver_id === user.id &&
+      !item.read_at
+    );
 
+  for (const item of unreadMessages) {
+
+    await supabaseClient
+      .from("private_messages")
+      .update({
+        read_at: new Date().toISOString()
+      })
+      .eq("id", item.id);
+
+  }
+
+}
 
 async function sendPrivateMessage() {
 
