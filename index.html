@@ -711,9 +711,11 @@ async function sendMessage() {
 
  const username = user.email.split("@")[0];
 
+const { error } =
+  await supabaseClient
+    .from("messages")
 const avatar_url =
-  "https://api.dicebear.com/9.x/adventurer/svg?seed=" +
-  encodeURIComponent(username);
+  localStorage.getItem("avatarUrl") || null;
 
 const { error } =
   await supabaseClient
