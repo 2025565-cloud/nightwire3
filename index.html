@@ -5,43 +5,65 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>My Messaging Website</title>
 
+  <!-- Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <style>
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     body {
       margin: 0;
       font-family: Arial, sans-serif;
       background: #111;
       color: white;
-      height: 100vh;
-      display: flex;
-      flex-direction: column;
+      min-height: 100vh;
     }
 
-    header {
-      background: #1d1d1d;
-      padding: 18px;
-      text-align: center;
-      font-size: 24px;
-      font-weight: bold;
-      border-bottom: 1px solid #333;
+    .screen {
+      max-width: 500px;
+      margin: auto;
+      padding: 30px 20px;
+    }
+
+    h1 { text-align: center; }
+
+    input {
+      width: 100%;
+      padding: 13px;
+      margin: 7px 0;
+      border: none;
+      border-radius: 10px;
+      background: #333;
+      color: white;
+    }
+
+    button {
+      padding: 12px 18px;
+      margin: 7px 3px;
+      border: none;
+      border-radius: 20px;
+      background: #555;
+      color: white;
+      cursor: pointer;
+    }
+
+    button:hover { background: #777; }
+
+    #chat {
+      display: none;
     }
 
     #messages {
-      flex: 1;
+      height: 65vh;
       overflow-y: auto;
-      padding: 20px;
+      padding: 15px 0;
     }
 
     .message {
       background: #252525;
-      padding: 12px 16px;
-      border-radius: 15px;
-      margin-bottom: 12px;
-      max-width: 70%;
-      width: fit-content;
+      padding: 12px;
+      border-radius: 14px;
+      margin: 10px 0;
     }
 
     .username {
@@ -50,109 +72,208 @@
       margin-bottom: 5px;
     }
 
-    .message-text {
-      font-size: 16px;
-    }
-
-    .input-area {
+    .send-area {
       display: flex;
-      gap: 10px;
-      padding: 15px;
-      background: #1d1d1d;
-      border-top: 1px solid #333;
+      gap: 8px;
+      position: sticky;
+      bottom: 0;
+      background: #111;
+      padding: 10px 0;
     }
 
-    #messageInput {
+    .send-area input {
       flex: 1;
-      padding: 13px;
-      border: none;
-      border-radius: 25px;
-      background: #333;
-      color: white;
-      font-size: 16px;
-      outline: none;
+      margin: 0;
     }
 
-    #sendButton {
-      padding: 13px 20px;
-      border: none;
-      border-radius: 25px;
-      background: #555;
-      color: white;
-      font-weight: bold;
-      cursor: pointer;
-    }
-
-    #sendButton:hover {
-      background: #777;
+    #status {
+      text-align: center;
+      color: #aaa;
+      min-height: 20px;
     }
   </style>
 </head>
 
 <body>
 
-  <header>
-    💬 My Messaging Website
-  </header>
+  <!-- LOGIN / SIGN UP -->
+  <div id="auth" class="screen">
+    <h1>💬 My Messages</h1>
 
-  <div id="messages">
-    <div class="message">
-      <div class="username">System</div>
-      <div class="message-text">
-        Welcome! Send a message below 👋
-      </div>
+    <input id="email" type="email" placeholder="Email">
+    <input id="password" type="password" placeholder="Password">
+
+    <div style="text-align:center;">
+      <button onclick="signUp()">Sign Up</button>
+      <button onclick="logIn()">Log In</button>
+    </div>
+
+    <p id="status"></p>
+  </div>
+
+  <!-- CHAT -->
+  <div id="chat" class="screen">
+    <h1>💬 Chat</h1>
+
+    <div style="text-align:center;">
+      <button onclick="logOut()">Log Out</button>
+    </div>
+
+    <div id="messages"></div>
+
+    <div class="send-area">
+      <input id="messageInput" type="text" placeholder="Type a message...">
+      <button onclick="sendMessage()">Send</button>
     </div>
   </div>
 
-  <div class="input-area">
-    <input
-      id="messageInput"
-      type="text"
-      placeholder="Type a message..."
-    >
-
-    <button id="sendButton">Send</button>
-  </div>
-
   <script>
-    const input = document.getElementById("messageInput");
-    const button = document.getElementById("sendButton");
-    const messages = document.getElementById("messages");
+    // ==============================
+    // PUT YOUR SUPABASE INFORMATION HERE
+    // ==============================
 
-    function sendMessage() {
-      const text = input.value.trim();
+    const SUPABASE_URL = "https://iwawfcnfgogfkognlcij.supabase.co/rest/v1/E";
+    const SUPABASE_KEY = "sb_publishable_2r705Lr5VJaXL-R7XcQfFw_FH--UiIh";
 
-      if (text === "") {
+    // ==============================
+
+    const supabaseClient =
+      window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    const authScreen = document.getElementById("auth");
+    const chatScreen = document.getElementById("chat");
+    const statusText = document.getElementById("status");
+
+    async function signUp() {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+
+      if (!email || !password) {
+        statusText.textContent = "Enter an email and password.";
         return;
       }
 
-      const message = document.createElement("div");
-      message.className = "message";
+      const { error } = await supabaseClient.auth.signUp({
+        email: email,
+        password: password
+      });
 
-      const username = document.createElement("div");
-      username.className = "username";
-      username.textContent = "You";
-
-      const messageText = document.createElement("div");
-      messageText.className = "message-text";
-      messageText.textContent = text;
-
-      message.appendChild(username);
-      message.appendChild(messageText);
-
-      messages.appendChild(message);
-
-      input.value = "";
-      messages.scrollTop = messages.scrollHeight;
+      if (error) {
+        statusText.textContent = error.message;
+      } else {
+        statusText.textContent =
+          "Account created! Check your email if confirmation is required.";
+      }
     }
 
-    button.addEventListener("click", sendMessage);
+    async function logIn() {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
 
-    input.addEventListener("keydown", function(event) {
-      if (event.key === "Enter") {
-        sendMessage();
+      const { error } = await supabaseClient.auth.signInWithPassword({
+        email: email,
+        password: password
+      });
+
+      if (error) {
+        statusText.textContent = error.message;
+      }
+    }
+
+    async function logOut() {
+      await supabaseClient.auth.signOut();
+    }
+
+    async function sendMessage() {
+      const input = document.getElementById("messageInput");
+      const text = input.value.trim();
+
+      if (!text) return;
+
+      const {
+        data: { user }
+      } = await supabaseClient.auth.getUser();
+
+      if (!user) return;
+
+      const username = user.email.split("@")[0];
+
+      const { error } = await supabaseClient
+        .from("messages")
+        .insert({
+          user_id: user.id,
+          username: username,
+          message: text
+        });
+
+      if (error) {
+        alert(error.message);
+        return;
+      }
+
+      input.value = "";
+      loadMessages();
+    }
+
+    async function loadMessages() {
+      const { data, error } = await supabaseClient
+        .from("messages")
+        .select("*")
+        .order("created_at", { ascending: true });
+
+      if (error) {
+        console.log(error);
+        return;
+      }
+
+      const container = document.getElementById("messages");
+      container.innerHTML = "";
+
+      data.forEach(item => {
+        const message = document.createElement("div");
+        message.className = "message";
+
+        const username = document.createElement("div");
+        username.className = "username";
+        username.textContent = item.username || "User";
+
+        const text = document.createElement("div");
+        text.textContent = item.message;
+
+        message.appendChild(username);
+        message.appendChild(text);
+        container.appendChild(message);
+      });
+
+      container.scrollTop = container.scrollHeight;
+    }
+
+    function showChat() {
+      authScreen.style.display = "none";
+      chatScreen.style.display = "block";
+      loadMessages();
+    }
+
+    function showLogin() {
+      authScreen.style.display = "block";
+      chatScreen.style.display = "none";
+    }
+
+    supabaseClient.auth.onAuthStateChange((event, session) => {
+      if (session) {
+        showChat();
+      } else {
+        showLogin();
       }
     });
+
+    document
+      .getElementById("messageInput")
+      .addEventListener("keydown", function(event) {
+        if (event.key === "Enter") {
+          sendMessage();
+        }
+      });
   </script>
 
 </body>
