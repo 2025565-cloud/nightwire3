@@ -3608,9 +3608,8 @@ async function startCallRealtime() {
           table: "call_signals"
         },
         async payload => {
-          alert("📞 CALL SIGNAL RECEIVED!");
-          await handleCallSignal(payload.new);
-        }
+  await handleCallSignal(payload.new);
+}
       )
      .subscribe((status, error) => {
   if (status === "SUBSCRIBED") {
