@@ -1559,10 +1559,17 @@ async function sendMessage() {
   const input =
     document.getElementById("messageInput");
 
+  const imageInput =
+    document.getElementById("imageInput");
+
   const text =
     input.value.trim();
 
-  if (!text) {
+  const file =
+    imageInput.files[0];
+
+  // Don't send if there is no text or image
+  if (!text && !file) {
     return;
   }
 
@@ -1581,6 +1588,51 @@ async function sendMessage() {
   const avatar_url =
     localStorage.getItem("avatarUrl") || null;
 
+  let imageUrl = null;
+
+  // ==============================
+  // UPLOAD IMAGE
+  // ==============================
+
+  if (file) {
+
+    const fileName =
+      user.id +
+      "-" +
+      Date.now() +
+      "-" +
+      file.name;
+
+    const { error: uploadError } =
+      await supabaseClient.storage
+        .from("chat-images")
+        .upload(fileName, file);
+
+    if (uploadError) {
+
+      alert(
+        "IMAGE UPLOAD ERROR:\n\n" +
+        uploadError.message
+      );
+
+      console.log(uploadError);
+
+      return;
+    }
+
+    const { data: publicUrlData } =
+      supabaseClient.storage
+        .from("chat-images")
+        .getPublicUrl(fileName);
+
+    imageUrl =
+      publicUrlData.publicUrl;
+  }
+
+  // ==============================
+  // SAVE MESSAGE
+  // ==============================
+
   const { error } =
     await supabaseClient
       .from("messages")
@@ -1589,6 +1641,7 @@ async function sendMessage() {
         username: username,
         avatar_url: avatar_url,
         message: text,
+        image_url: imageUrl,
         read_at: null
       });
 
@@ -1602,10 +1655,12 @@ async function sendMessage() {
     );
 
     console.log(error);
+
     return;
   }
 
   input.value = "";
+  imageInput.value = "";
 
   clearTimeout(typingTimeout);
 
@@ -1613,7 +1668,6 @@ async function sendMessage() {
 
   loadMessages();
 }
-
 
 // ==============================
 // READ RECEIPTS
