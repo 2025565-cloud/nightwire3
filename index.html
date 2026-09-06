@@ -1112,14 +1112,16 @@ if (isMine) {
 
     function showChat() {
 
-      authScreen.style.display =
-        "none";
+  authScreen.style.display =
+    "none";
 
-      chatScreen.style.display =
-        "flex";
+  chatScreen.style.display =
+    "flex";
 
-      loadMessages();
-    }
+  markMessagesAsRead();
+
+  loadMessages();
+}
 
 
     // ==============================
