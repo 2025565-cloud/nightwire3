@@ -3608,10 +3608,13 @@ async function startCallRealtime() {
           table: "call_signals"
         },
         async payload => {
+          console.log("📞 CALL SIGNAL RECEIVED:", payload.new);
           await handleCallSignal(payload.new);
         }
       )
-      .subscribe();
+      .subscribe(status => {
+        console.log("📡 CALL REALTIME STATUS:", status);
+      });
 }
 
 async function handleCallSignal(signal) {
