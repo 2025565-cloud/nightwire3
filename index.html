@@ -1466,24 +1466,42 @@ typingChannel
   });
 
 
-async function setTyping(isTyping) {
+let typingTimeout = null;
+let lastTypingState = null;
 
+async function setTyping(isTyping) {
   const {
     data: { user }
-  } =
-    await supabaseClient.auth.getUser();
+  } = await supabaseClient.auth.getUser();
 
   if (!user) {
     return;
   }
 
-  await typingChannel.track({
-    user_id: user.id,
-    username: user.email.split("@")[0],
-    typing: isTyping
-  });
-}
+  // Don't send the same state repeatedly
+  if (lastTypingState === isTyping) {
+    return;
+  }
 
+  // Don't send typing updates too frequently
+  if (typingTimeout) {
+    clearTimeout(typingTimeout);
+  }
+
+  typingTimeout = setTimeout(async () => {
+    try {
+      await typingChannel.track({
+        user_id: user.id,
+        username: user.email.split("@")[0],
+        typing: isTyping
+      });
+
+      lastTypingState = isTyping;
+    } catch (error) {
+      console.log("Typing presence error:", error);
+    }
+  }, 500);
+}
 
 function updateTypingIndicator() {
 
