@@ -841,6 +841,10 @@ body {
   transform: scale(1.15);
   background: #40444b;
 }
+    .reaction-button.my-reaction {
+  background: #5865f2;
+  border-color: #7289da;
+}
     
   </style>
 </head>
@@ -1984,20 +1988,60 @@ const reactions = [
   "😢"
 ];
 
+const {
+  data: reactionData,
+  error: reactionError
+} =
+  await supabaseClient
+    .from("message_reactions")
+    .select("*")
+    .eq("message_id", item.Id);
+
+if (reactionError) {
+
+  console.log(
+    "Reaction load error:",
+    reactionError
+  );
+
+}
+
 reactions.forEach(reaction => {
+
+  const count =
+    (reactionData || []).filter(
+      r => r.reaction === reaction
+    ).length;
+
+  const myReaction =
+    (reactionData || []).some(
+      r =>
+        r.reaction === reaction &&
+        user &&
+        r.user_id === user.id
+    );
 
   const reactionButton =
     document.createElement("button");
 
-  reactionButton.textContent =
-    reaction;
-
   reactionButton.className =
     "reaction-button";
 
+  reactionButton.textContent =
+    reaction +
+    (count > 0 ? " " + count : "");
+
+  if (myReaction) {
+
+    reactionButton.classList.add(
+      "my-reaction"
+    );
+
+  }
+
   reactionButton.onclick = () => {
 
-    addReaction(
+    toggleReaction(
       item.Id,
       reaction
     );
