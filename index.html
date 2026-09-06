@@ -808,6 +808,7 @@ async function uploadAvatar() {
 
 
 async function sendMessage() {
+
   const input =
     document.getElementById("messageInput");
 
@@ -845,13 +846,12 @@ async function sendMessage() {
       });
 
   if (error) {
+
     alert(
       "ERROR:\n\n" +
       error.message +
       "\n\nCode: " +
-      error.code +
-      "\n\nDetails: " +
-      error.details
+      error.code
     );
 
     console.log(error);
@@ -863,26 +863,14 @@ async function sendMessage() {
   clearTimeout(typingTimeout);
 
   await setTyping(false);
-  
+
   loadMessages();
 }
-if (error) {
-  alert(
-    "ERROR:\n\n" +
-    error.message
-  );
 
-  console.log(error);
-  return;
-}
 
-input.value = "";
-
-clearTimeout(typingTimeout);
-
-setTyping(false);
-
-loadMessages();
+// ==============================
+// READ RECEIPTS
+// ==============================
 
 async function markMessagesAsRead() {
 
@@ -905,16 +893,27 @@ async function markMessagesAsRead() {
       .neq("user_id", user.id);
 
   if (error) {
+
     console.log(
       "Read receipt error:",
       error
     );
+
   }
 }
-    async function editMessage(messageId, oldMessage) {
+
+
+// ==============================
+// EDIT MESSAGE
+// ==============================
+
+async function editMessage(messageId, oldMessage) {
 
   const newMessage =
-    prompt("Edit your message:", oldMessage);
+    prompt(
+      "Edit your message:",
+      oldMessage
+    );
 
   if (newMessage === null) {
     return;
@@ -943,10 +942,11 @@ async function markMessagesAsRead() {
         message: text,
         edited_at: new Date().toISOString()
       })
-    .eq('"Id"', messageId)
-.eq("user_id", user.id);
-      
+      .eq('"Id"', messageId)
+      .eq("user_id", user.id);
+
   if (error) {
+
     alert(
       "Edit error:\n\n" +
       error.message
@@ -957,7 +957,14 @@ async function markMessagesAsRead() {
   }
 
   loadMessages();
-}async function loadMessages() {
+}
+
+
+// ==============================
+// LOAD MESSAGES
+// ==============================
+
+async function loadMessages() {
 
   const {
     data: { user }
@@ -967,10 +974,11 @@ async function markMessagesAsRead() {
   const { data, error } =
     await supabaseClient
       .from("messages")
-      .select('*')
-      .order("created_at", {
-        ascending: true
-      });
+      .select("*")
+      .order(
+        "created_at",
+        { ascending: true }
+      );
 
   if (error) {
 
@@ -1005,6 +1013,9 @@ async function markMessagesAsRead() {
       "message-row" +
       (isMine ? " mine" : "");
 
+
+    // Avatar
+
     const avatar =
       document.createElement("div");
 
@@ -1033,13 +1044,20 @@ async function markMessagesAsRead() {
         username
           .charAt(0)
           .toUpperCase();
+
     }
+
+
+    // Content
 
     const content =
       document.createElement("div");
 
     content.className =
       "message-content";
+
+
+    // Username
 
     const name =
       document.createElement("div");
@@ -1050,11 +1068,15 @@ async function markMessagesAsRead() {
     name.textContent =
       username;
 
+
+    // Message bubble
+
     const bubble =
       document.createElement("div");
 
     bubble.className =
       "message";
+
 
     const text =
       document.createElement("div");
@@ -1066,6 +1088,9 @@ async function markMessagesAsRead() {
       item.message || "";
 
     bubble.appendChild(text);
+
+
+    // Edited label
 
     if (item.edited_at) {
 
@@ -1079,7 +1104,11 @@ async function markMessagesAsRead() {
         "edited-label";
 
       text.appendChild(edited);
+
     }
+
+
+    // Time
 
     const time =
       document.createElement("div");
@@ -1089,25 +1118,47 @@ async function markMessagesAsRead() {
 
     time.textContent =
       new Date(item.created_at)
-        .toLocaleTimeString([], {
-          hour: "numeric",
-          minute: "2-digit"
-        });
+        .toLocaleTimeString(
+          [],
+          {
+            hour: "numeric",
+            minute: "2-digit"
+          }
+        );
+
 
     content.appendChild(name);
     content.appendChild(bubble);
     content.appendChild(time);
 
-    row.appendChild(avatar);
-    row.appendChild(content);
 
-    container.appendChild(row);
+    // Edit button
 
-  });
+    if (isMine) {
 
-  container.scrollTop =
-    container.scrollHeight;
-}
+      const editButton =
+        document.createElement("button");
+
+      editButton.textContent =
+        "✏️ Edit";
+
+      editButton.className =
+        "edit-button";
+
+      editButton.onclick = () => {
+
+        editMessage(
+          item.Id,
+          item.message
+        );
+
+      };
+
+      content.appendChild(
+        editButton
+      );
+
+    }
 
 
     // Read receipt
@@ -1132,30 +1183,24 @@ async function markMessagesAsRead() {
 
         receipt.textContent =
           "✓ Sent";
+
       }
 
       content.appendChild(
         receipt
       );
+
     }
 
 
-    row.appendChild(
-      avatar
-    );
+    row.appendChild(avatar);
 
-    row.appendChild(
-      content
-    );
+    row.appendChild(content);
 
-    container.appendChild(
-      row
-    );
+    container.appendChild(row);
 
   });
 
-
-  // Scroll to newest message
 
   container.scrollTop =
     container.scrollHeight;
