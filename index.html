@@ -941,8 +941,7 @@ async function markMessagesAsRead() {
   }
 
   loadMessages();
-}
-    async function loadMessages() {
+}async function loadMessages() {
 
   const {
     data: { user }
@@ -952,26 +951,32 @@ async function markMessagesAsRead() {
   const { data, error } =
     await supabaseClient
       .from("messages")
-      .select("*")
-      .order(
-        "created_at",
-        { ascending: true }
-      );
+      .select('*')
+      .order("created_at", {
+        ascending: true
+      });
 
   if (error) {
-    console.log("LOAD MESSAGES ERROR:", error);
+
+    console.log(
+      "LOAD MESSAGES ERROR:",
+      error
+    );
+
     return;
   }
+
+  console.log(
+    "MESSAGES:",
+    data
+  );
 
   const container =
     document.getElementById("messages");
 
   container.innerHTML = "";
 
- console.log("MESSAGE DATA:", data);
   data.forEach(item => {
-
-    // Message row
 
     const row =
       document.createElement("div");
@@ -983,9 +988,6 @@ async function markMessagesAsRead() {
     row.className =
       "message-row" +
       (isMine ? " mine" : "");
-
-
-    // Avatar
 
     const avatar =
       document.createElement("div");
@@ -1007,18 +1009,6 @@ async function markMessagesAsRead() {
       image.alt =
         username;
 
-      image.style.width =
-        "100%";
-
-      image.style.height =
-        "100%";
-
-      image.style.borderRadius =
-        "50%";
-
-      image.style.objectFit =
-        "cover";
-
       avatar.appendChild(image);
 
     } else {
@@ -1029,30 +1019,11 @@ async function markMessagesAsRead() {
           .toUpperCase();
     }
 
-
-    // Online indicator
-
-    const onlineDot =
-      document.createElement("div");
-
-    onlineDot.className =
-      "online-dot";
-
-    avatar.appendChild(
-      onlineDot
-    );
-
-
-    // Message content
-
     const content =
       document.createElement("div");
 
     content.className =
       "message-content";
-
-
-    // Username
 
     const name =
       document.createElement("div");
@@ -1063,17 +1034,11 @@ async function markMessagesAsRead() {
     name.textContent =
       username;
 
-
-    // Message bubble
-
     const bubble =
       document.createElement("div");
 
     bubble.className =
       "message";
-
-
-    // Message text
 
     const text =
       document.createElement("div");
@@ -1085,9 +1050,6 @@ async function markMessagesAsRead() {
       item.message || "";
 
     bubble.appendChild(text);
-
-
-    // Edited label
 
     if (item.edited_at) {
 
@@ -1103,9 +1065,6 @@ async function markMessagesAsRead() {
       text.appendChild(edited);
     }
 
-
-    // Time
-
     const time =
       document.createElement("div");
 
@@ -1114,50 +1073,25 @@ async function markMessagesAsRead() {
 
     time.textContent =
       new Date(item.created_at)
-        .toLocaleTimeString(
-          [],
-          {
-            hour: "numeric",
-            minute: "2-digit"
-          }
-        );
-
-
-    // Add message pieces
+        .toLocaleTimeString([], {
+          hour: "numeric",
+          minute: "2-digit"
+        });
 
     content.appendChild(name);
-
     content.appendChild(bubble);
-
     content.appendChild(time);
 
+    row.appendChild(avatar);
+    row.appendChild(content);
 
-    // Edit button
+    container.appendChild(row);
 
-    if (isMine) {
+  });
 
-      const editButton =
-        document.createElement("button");
-
-      editButton.textContent =
-        "✏️ Edit";
-
-      editButton.className =
-        "edit-button";
-
-      eeditButton.onclick = () => {
-
-  editMessage(
-    item.Id,
-    item.message
-  );
-
-};
-
-content.appendChild(
-  editButton
-);
-    }
+  container.scrollTop =
+    container.scrollHeight;
+}
 
 
     // Read receipt
