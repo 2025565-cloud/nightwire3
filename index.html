@@ -14,7 +14,7 @@ body {
 }
 
 /* Main chat */
-#chatScreen {
+#chat {
   width: 100%;
   height: 100vh;
   display: flex;
@@ -331,90 +331,7 @@ user_id: user.id,
   input.value = "";
 }
 </script>
-  <style>
-    * { box-sizing: border-box; }
 
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #111;
-      color: white;
-      min-height: 100vh;
-    }
-
-    .screen {
-      max-width: 500px;
-      margin: auto;
-      padding: 30px 20px;
-    }
-
-    h1 { text-align: center; }
-
-    input {
-      width: 100%;
-      padding: 13px;
-      margin: 7px 0;
-      border: none;
-      border-radius: 10px;
-      background: #333;
-      color: white;
-    }
-
-    button {
-      padding: 12px 18px;
-      margin: 7px 3px;
-      border: none;
-      border-radius: 20px;
-      background: #555;
-      color: white;
-      cursor: pointer;
-    }
-
-    button:hover { background: #777; }
-
-    #chat {
-      display: none;
-    }
-
-    #messages {
-      height: 65vh;
-      overflow-y: auto;
-      padding: 15px 0;
-    }
-
-    .message {
-      background: #252525;
-      padding: 12px;
-      border-radius: 14px;
-      margin: 10px 0;
-    }
-
-    .username {
-      font-size: 12px;
-      color: #aaa;
-      margin-bottom: 5px;
-    }
-
-    .send-area {
-      display: flex;
-      gap: 8px;
-      position: sticky;
-      bottom: 0;
-      background: #111;
-      padding: 10px 0;
-    }
-
-    .send-area input {
-      flex: 1;
-      margin: 0;
-    }
-
-    #status {
-      text-align: center;
-      color: #aaa;
-      min-height: 20px;
-    }
-  </style>
 </head>
 
 <body>
