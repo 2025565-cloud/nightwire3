@@ -663,10 +663,21 @@ async function sendMessage() {
         message: text
       });
 
-  if (error) {
-    alert(error.message);
-    return;
-  }
+ if (error) {
+
+  alert(
+    "ERROR:\n\n" +
+    error.message +
+    "\n\nCode: " +
+    error.code +
+    "\n\nDetails: " +
+    error.details
+  );
+
+  console.log(error);
+
+  return;
+}
 
   input.value = "";
 
