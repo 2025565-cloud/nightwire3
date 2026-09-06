@@ -1681,11 +1681,13 @@ async function sendMessage() {
     return;
   }
 
-  input.value = "";
-  imageInput.value = "";
+ input.value = "";
+imageInput.value = "";
 
-  clearTimeout(typingTimeout);
+document.getElementById("imagePreview").style.display = "none";
+document.getElementById("previewImage").src = "";
 
+clearTimeout(typingTimeout);
   await setTyping(false);
 
   loadMessages();
