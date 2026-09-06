@@ -1173,6 +1173,30 @@ updateOnlineStatus();
 
     
 // ==============================
+// TAB MESSAGE NOTIFICATION
+// ==============================
+
+let unreadCount = 0;
+
+function updateTabTitle() {
+
+  if (unreadCount > 0) {
+
+    document.title =
+      "(" +
+      unreadCount +
+      ") 💬 My Messages";
+
+  } else {
+
+    document.title =
+      "💬 My Messages";
+
+  }
+}
+    
+    
+// ==============================
 // NOTIFICATIONS
 // ==============================
 
