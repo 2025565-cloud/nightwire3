@@ -3590,71 +3590,7 @@ async function deletePrivateMessage(messageId) {
 
   await loadPrivateMessages();
 }
-    <div id="callPanel" class="call-panel" style="display: none;">
-  <div class="call-box">
-
-    <h2 id="callTitle">📞 Calling...</h2>
-
-    <video
-      id="remoteVideo"
-      autoplay
-      playsinline
-    ></video>
-
-    <video
-      id="localVideo"
-      autoplay
-      muted
-      playsinline
-    ></video>
-    
-    <div id="incomingCallControls" style="display: none;">
-  <button
-    type="button"
-    onclick="acceptCall()"
-  >
-    ✅ Accept
-  </button>
-
-  <button
-    type="button"
-    onclick="declineCall()"
-  >
-    ❌ Decline
-  </button>
-</div>
-
-    <div class="call-controls">
-      <button
-        type="button"
-        onclick="toggleMute()"
-        id="muteButton"
-      >
-        🎙️ Mute
-      </button>
-
-      <button
-        type="button"
-        onclick="toggleCamera()"
-        id="cameraButton"
-      >
-        📷 Camera
-      </button>
-
-      <button
-        type="button"
-        onclick="endCall()"
-        class="end-call-button"
-      >
-        ☎️ End
-      </button>
-    </div>
-
-  </div>
-</div>
-
-  
-  let callRealtimeChannel = null;
+     let callRealtimeChannel = null;
 
 async function startCallRealtime() {
   if (callRealtimeChannel) {
@@ -3850,9 +3786,68 @@ if (signal.type === "candidate") {
 
   </script>
 
-  <div id="callPanel" class="call-panel" style="display: none;">
-    ...
+ <div id="callPanel" class="call-panel" style="display: none;">
+  <div class="call-box">
+
+    <h2 id="callTitle">📞 Calling...</h2>
+
+    <video
+      id="remoteVideo"
+      autoplay
+      playsinline
+    ></video>
+
+    <video
+      id="localVideo"
+      autoplay
+      muted
+      playsinline
+    ></video>
+    
+    <div id="incomingCallControls" style="display: none;">
+  <button
+    type="button"
+    onclick="acceptCall()"
+  >
+    ✅ Accept
+  </button>
+
+  <button
+    type="button"
+    onclick="declineCall()"
+  >
+    ❌ Decline
+  </button>
+</div>
+
+    <div class="call-controls">
+      <button
+        type="button"
+        onclick="toggleMute()"
+        id="muteButton"
+      >
+        🎙️ Mute
+      </button>
+
+      <button
+        type="button"
+        onclick="toggleCamera()"
+        id="cameraButton"
+      >
+        📷 Camera
+      </button>
+
+      <button
+        type="button"
+        onclick="endCall()"
+        class="end-call-button"
+      >
+        ☎️ End
+      </button>
+    </div>
+
   </div>
+</div>
 
 </body>
 </html>
