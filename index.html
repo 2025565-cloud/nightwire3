@@ -14,7 +14,8 @@ async function sendMessage() {
 
   if (!user) return;
 
-  alert("Supabase user ID: " + user.id);
+ console.log("USER ID:", user.id);
+console.log("EMAIL:", user.email);
 
   const username = user.email.split("@")[0];
 
