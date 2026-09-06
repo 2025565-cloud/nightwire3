@@ -2102,7 +2102,45 @@ const avatarUrl =
         "none";
     }
 
+// ==============================
+// NEW MESSAGE TAB COUNTER
+// ==============================
 
+const messageChannel =
+  supabaseClient.channel("main-chat-messages");
+
+messageChannel
+  .on(
+    "postgres_changes",
+    {
+      event: "INSERT",
+      schema: "public",
+      table: "messages"
+    },
+    async (payload) => {
+
+      const {
+        data: { user }
+      } =
+        await supabaseClient.auth.getUser();
+
+      // Don't count your own messages
+      if (
+        user &&
+        payload.new.user_id === user.id
+      ) {
+        return;
+      }
+
+      // Add one unread message
+      unreadCount++;
+
+      updateTabTitle();
+    }
+  )
+  .subscribe();
+
+    
     // ==============================
     // WATCH LOGIN STATUS
     // ==============================
