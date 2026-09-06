@@ -450,6 +450,37 @@ body {
 .edit-button:hover {
   color: #5865f2;
 }
+    .message-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.edit-button,
+.delete-button {
+  border: none;
+  background: transparent;
+  font-size: 10px;
+  cursor: pointer;
+  padding: 2px 5px;
+  transition: 0.2s;
+}
+
+.edit-button {
+  color: #747b89;
+}
+
+.edit-button:hover {
+  color: #5865f2;
+}
+
+.delete-button {
+  color: #747b89;
+}
+
+.delete-button:hover {
+  color: #ed4245;
+}
 
 /* =========================
    READ RECEIPTS
@@ -1281,7 +1312,6 @@ async function deleteMessage(messageId) {
     );
 
     console.log(error);
-
     return;
   }
 
@@ -1318,11 +1348,6 @@ async function loadMessages() {
 
     return;
   }
-
-  console.log(
-    "MESSAGES:",
-    data
-  );
 
   const container =
     document.getElementById("messages");
@@ -1472,7 +1497,7 @@ async function loadMessages() {
         "message-actions";
 
 
-      // Edit
+      // Edit button
 
       const editButton =
         document.createElement("button");
@@ -1493,7 +1518,7 @@ async function loadMessages() {
       };
 
 
-      // Delete
+      // Delete button
 
       const deleteButton =
         document.createElement("button");
@@ -1572,7 +1597,6 @@ async function loadMessages() {
   container.scrollTop =
     container.scrollHeight;
 }
-
     // ==============================
     // SHOW CHAT
     // ==============================
