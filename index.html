@@ -1464,11 +1464,39 @@ typingChannel
       }
     }
   });
+    
+async function setTyping(isTyping) {
+  const {
+    data: { user }
+  } = await supabaseClient.auth.getUser();
 
+  if (!user) {
+    return;
+  }
 
-let typingTimeout = null;
-let lastTypingState = null;
+  if (lastTypingState === isTyping) {
+    return;
+  }
 
+  if (typingTimeout) {
+    clearTimeout(typingTimeout);
+  }
+
+  typingTimeout = setTimeout(async () => {
+    try {
+      await typingChannel.track({
+        user_id: user.id,
+        username: user.email.split("@")[0],
+        typing: isTyping
+      });
+
+      lastTypingState = isTyping;
+    } catch (error) {
+      console.log("Typing presence error:", error);
+    }
+  }, 500);
+}
+    
 async function setTyping(isTyping) {
   const {
     data: { user }
