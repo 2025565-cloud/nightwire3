@@ -1707,15 +1707,16 @@ async function sendMessage() {
 
   const { error } =
     await supabaseClient
-      .from("messages")
-      .insert({
-        user_id: user.id,
-        username: username,
-        avatar_url: avatar_url,
-        message: text,
-        image_url: imageUrl,
-        read_at: null
-      });
+     .from("messages")
+.insert({
+  user_id: user.id,
+  username: username,
+  avatar_url: avatar_url,
+  message: text,
+  image_url: imageUrl,
+  reply_to: replyingTo,
+  read_at: null
+});
 
   if (error) {
 
@@ -1743,6 +1744,45 @@ clearTimeout(typingTimeout);
   loadMessages();
 }
 
+    let replyingTo = null;
+
+function startReply(
+  messageId,
+  username,
+  messageText
+) {
+
+  replyingTo = messageId;
+
+  document.getElementById(
+    "replyUsername"
+  ).textContent =
+    "Replying to " + username;
+
+  document.getElementById(
+    "replyText"
+  ).textContent =
+    messageText || "📷 Image";
+
+  document.getElementById(
+    "replyPreview"
+  ).style.display = "flex";
+
+  document.getElementById(
+    "messageInput"
+  ).focus();
+}
+
+
+function cancelReply() {
+
+  replyingTo = null;
+
+  document.getElementById(
+    "replyPreview"
+  ).style.display = "none";
+}
+    
     document
   .getElementById("imageInput")
   .addEventListener("change", function () {
@@ -2272,7 +2312,31 @@ reactions.forEach(reaction => {
 content.appendChild(
   reactionBar
 );
-    
+   
+    // ==============================
+// REPLY BUTTON
+// ==============================
+
+const replyButton =
+  document.createElement("button");
+
+replyButton.textContent =
+  "↩️ Reply";
+
+replyButton.className =
+  "reply-button";
+
+replyButton.onclick = () => {
+
+  startReply(
+    item.Id,
+    username,
+    item.message
+  );
+};
+
+content.appendChild(replyButton);
+   
     // ==============================
     // EDIT + DELETE
     // ==============================
