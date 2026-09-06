@@ -1231,7 +1231,164 @@ async function uploadAvatar() {
     "Profile picture uploaded! 📸";
 }
  
+// ==============================
+// USER PROFILE
+// ==============================
 
+async function openProfile() {
+
+  const panel =
+    document.getElementById("profilePanel");
+
+  const usernameInput =
+    document.getElementById("profileUsername");
+
+  const bioInput =
+    document.getElementById("profileBio");
+
+  const {
+    data: { user }
+  } =
+    await supabaseClient.auth.getUser();
+
+  if (!user) {
+    return;
+  }
+
+  const { data, error } =
+    await supabaseClient
+      .from("profiles")
+      .select("*")
+      .eq("id", user.id)
+      .maybeSingle();
+
+  if (error) {
+
+    console.log(
+      "Profile load error:",
+      error
+    );
+
+    return;
+  }
+
+  if (data) {
+
+    usernameInput.value =
+      data.username || "";
+
+    bioInput.value =
+      data.bio || "";
+
+  } else {
+
+    usernameInput.value =
+      user.email.split("@")[0];
+
+    bioInput.value =
+      "";
+
+  }
+
+  panel.style.display =
+    "flex";
+}
+
+
+// ==============================
+// CLOSE PROFILE
+// ==============================
+
+function closeProfile() {
+
+  document.getElementById(
+    "profilePanel"
+  ).style.display = "none";
+
+}
+
+
+// ==============================
+// SAVE PROFILE
+// ==============================
+
+async function saveProfile() {
+
+  const username =
+    document
+      .getElementById("profileUsername")
+      .value
+      .trim();
+
+  const bio =
+    document
+      .getElementById("profileBio")
+      .value
+      .trim();
+
+  const profileStatus =
+    document.getElementById(
+      "profileStatus"
+    );
+
+  if (!username) {
+
+    profileStatus.textContent =
+      "Please enter a username.";
+
+    return;
+  }
+
+  const {
+    data: { user }
+  } =
+    await supabaseClient.auth.getUser();
+
+  if (!user) {
+    return;
+  }
+
+  profileStatus.textContent =
+    "Saving...";
+
+  const avatarUrl =
+    localStorage.getItem(
+      "avatarUrl"
+    ) || null;
+
+  const { error } =
+    await supabaseClient
+      .from("profiles")
+      .upsert({
+        id: user.id,
+        username: username,
+        bio: bio,
+        avatar_url: avatarUrl
+      });
+
+  if (error) {
+
+    profileStatus.textContent =
+      "Error: " +
+      error.message;
+
+    console.log(error);
+
+    return;
+  }
+
+  profileStatus.textContent =
+    "Profile saved! ✅";
+
+  loadMessages();
+
+  setTimeout(() => {
+
+    closeProfile();
+
+  }, 800);
+}
+    
     async function signUp() {
 
       const email =
