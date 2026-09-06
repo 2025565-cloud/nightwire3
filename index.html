@@ -1,6 +1,69 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <style>
+#messages {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 15px;
+  height: 400px;
+  overflow-y: auto;
+}
+
+.message {
+  max-width: 70%;
+  padding: 10px 14px;
+  border-radius: 18px;
+  background: #eeeeee;
+  align-self: flex-start;
+  word-wrap: break-word;
+}
+
+.message.mine {
+  align-self: flex-end;
+  background: #5865f2;
+  color: white;
+  border-bottom-right-radius: 5px;
+}
+
+.message-username {
+  font-size: 12px;
+  font-weight: bold;
+  margin-bottom: 3px;
+  opacity: 0.7;
+}
+
+.message-text {
+  font-size: 15px;
+}
+
+.message-time {
+  font-size: 10px;
+  opacity: 0.6;
+  margin-top: 4px;
+}
+
+.send-area {
+  display: flex;
+  gap: 8px;
+  padding: 10px;
+}
+
+.send-area input {
+  flex: 1;
+  padding: 10px;
+  border-radius: 20px;
+  border: 1px solid #ccc;
+}
+
+.send-area button {
+  padding: 10px 18px;
+  border-radius: 20px;
+  border: none;
+  cursor: pointer;
+}
+</style>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>My Messaging Website</title>
@@ -250,39 +313,55 @@ user_id: user.id,
       input.value = "";
       loadMessages();
     }
+async function loadMessages() {
+  const {
+    data: { user }
+  } = await supabaseClient.auth.getUser();
 
-    async function loadMessages() {
-      const { data, error } = await supabaseClient
-        .from("messages")
-        .select("*")
-        .order("created_at", { ascending: true });
+  const { data, error } = await supabaseClient
+    .from("messages")
+    .select("*")
+    .order("created_at", { ascending: true });
 
-      if (error) {
-        console.log(error);
-        return;
-      }
+  if (error) {
+    console.log(error);
+    return;
+  }
 
-      const container = document.getElementById("messages");
-      container.innerHTML = "";
+  const container = document.getElementById("messages");
+  container.innerHTML = "";
 
-      data.forEach(item => {
-        const message = document.createElement("div");
-        message.className = "message";
+  data.forEach(item => {
+    const message = document.createElement("div");
 
-        const username = document.createElement("div");
-        username.className = "username";
-        username.textContent = item.username || "User";
+    // Put your own messages on the right
+    message.className =
+      "message" + (user && item.user_id === user.id ? " mine" : "");
 
-        const text = document.createElement("div");
-        text.textContent = item.message;
+    const username = document.createElement("div");
+    username.className = "message-username";
+    username.textContent = item.username || "User";
 
-        message.appendChild(username);
-        message.appendChild(text);
-        container.appendChild(message);
-      });
+    const text = document.createElement("div");
+    text.className = "message-text";
+    text.textContent = item.message || "";
 
-      container.scrollTop = container.scrollHeight;
-    }
+    const time = document.createElement("div");
+    time.className = "message-time";
+    time.textContent = new Date(item.created_at).toLocaleTimeString([], {
+      hour: "numeric",
+      minute: "2-digit"
+    });
+
+    message.appendChild(username);
+    message.appendChild(text);
+    message.appendChild(time);
+
+    container.appendChild(message);
+  });
+
+  container.scrollTop = container.scrollHeight;
+}
 
     function showChat() {
       authScreen.style.display = "none";
