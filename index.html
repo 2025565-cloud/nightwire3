@@ -855,6 +855,36 @@ body {
   margin-top: 8px;
   cursor: pointer;
 }
+    .image-preview {
+  position: relative;
+  display: inline-block;
+  margin: 10px;
+  padding: 6px;
+  background: #1e1f22;
+  border: 1px solid #40444b;
+  border-radius: 12px;
+}
+
+.image-preview img {
+  display: block;
+  max-width: 220px;
+  max-height: 180px;
+  border-radius: 8px;
+}
+
+.remove-preview {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  width: 25px;
+  height: 25px;
+  border: none;
+  border-radius: 50%;
+  background: #ed4245;
+  color: white;
+  font-size: 14px;
+  cursor: pointer;
+}
     
   </style>
 </head>
@@ -1693,6 +1723,49 @@ clearTimeout(typingTimeout);
   loadMessages();
 }
 
+    document
+  .getElementById("imageInput")
+  .addEventListener("change", function () {
+
+    const file = this.files[0];
+
+    if (!file) {
+      return;
+    }
+
+    const preview =
+      document.getElementById("imagePreview");
+
+    const previewImage =
+      document.getElementById("previewImage");
+
+    const imageUrl =
+      URL.createObjectURL(file);
+
+    previewImage.src = imageUrl;
+
+    preview.style.display = "block";
+  });
+
+
+function removeImagePreview() {
+
+  const imageInput =
+    document.getElementById("imageInput");
+
+  const preview =
+    document.getElementById("imagePreview");
+
+  const previewImage =
+    document.getElementById("previewImage");
+
+  imageInput.value = "";
+
+  previewImage.src = "";
+
+  preview.style.display = "none";
+}
+    
 // ==============================
 // READ RECEIPTS
 // ==============================
