@@ -726,10 +726,23 @@ const { error } =
           item.username || "User";
 
 
-        avatar.textContent =
-          username
-            .charAt(0)
-            .toUpperCase();
+       if (item.avatar_url) {
+  const image =
+    document.createElement("img");
+
+  image.src = item.avatar_url;
+  image.alt = username;
+
+  image.style.width = "100%";
+  image.style.height = "100%";
+  image.style.borderRadius = "50%";
+  image.style.objectFit = "cover";
+
+  avatar.appendChild(image);
+} else {
+  avatar.textContent =
+    username.charAt(0).toUpperCase();
+}
 
 
         // Online indicator
