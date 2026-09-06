@@ -1171,6 +1171,21 @@ updateOnlineStatus();
    const statusText =
   document.getElementById("status");
 
+    
+// ==============================
+// NOTIFICATIONS
+// ==============================
+
+async function requestNotifications() {
+
+  if (!("Notification" in window)) {
+    return;
+  }
+
+  if (Notification.permission === "default") {
+    await Notification.requestPermission();
+  }
+}
 
 async function uploadAvatar() {
 
