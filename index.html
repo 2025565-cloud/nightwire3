@@ -3843,16 +3843,16 @@ if (signal.type === "candidate") {
   }
 }
   
-async function declineCall() {
-  console.log("Declining call...");
-  endCall();
-}
-    
+    async function declineCall() {
+      console.log("Declining call...");
+      endCall();
+    }
+
   </script>
-  
-<div> id-"callPanel"
-</div>
-  
+
+  <div id="callPanel" class="call-panel" style="display: none;">
+    ...
+  </div>
+
 </body>
- </html> 
 </html>
