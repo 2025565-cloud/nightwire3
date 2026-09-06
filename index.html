@@ -1810,9 +1810,25 @@ async function loadMessages() {
     document.getElementById("messages");
 
   container.innerHTML = "";
+  
+const {
+  data: allReactions,
+  error: reactionsError
+} =
+  await supabaseClient
+    .from("message_reactions")
+    .select("*");
 
+if (reactionsError) {
 
- data.forEach(async item => {
+  console.log(
+    "Reaction load error:",
+    reactionsError
+  );
+
+}
+
+ data.forEach(item => {
 
     const row =
       document.createElement("div");
