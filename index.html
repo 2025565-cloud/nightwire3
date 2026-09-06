@@ -1688,9 +1688,35 @@ async function loadMessages() {
     await supabaseClient.auth.getUser();
 
   const { data, error } =
-    await supabaseClient
-      .from("messages")
-      .select("*")
+  await supabaseClient
+    .from("messages")
+    .select("*")
+    .order("created_at", { ascending: true });
+
+if (error) {
+  console.log("Message load error:", error);
+  return;
+}
+
+
+// Get all user profiles
+const { data: profiles, error: profilesError } =
+  await supabaseClient
+    .from("profiles")
+    .select("*");
+
+if (profilesError) {
+  console.log("Profile load error:", profilesError);
+}
+
+
+// Make a profile lookup
+const profileMap = {};
+
+(profiles || []).forEach(profile => {
+  profileMap[profile.id] = profile;
+});
+  
       .order(
         "created_at",
         { ascending: true }
