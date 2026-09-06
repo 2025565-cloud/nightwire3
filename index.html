@@ -845,6 +845,16 @@ body {
   background: #5865f2;
   border-color: #7289da;
 }
+    .message-image {
+  display: block;
+  max-width: 280px;
+  max-height: 350px;
+  width: auto;
+  height: auto;
+  border-radius: 12px;
+  margin-top: 8px;
+  cursor: pointer;
+}
     
   </style>
 </head>
@@ -1997,7 +2007,34 @@ const avatarUrl =
     bubble.appendChild(
       text
     );
+   
+// ==============================
+// DISPLAY IMAGE
+// ==============================
 
+if (item.image_url) {
+
+  const image =
+    document.createElement("img");
+
+  image.src =
+    item.image_url;
+
+  image.className =
+    "message-image";
+
+  image.alt =
+    "Shared image";
+
+  image.onclick = () => {
+    window.open(
+      item.image_url,
+      "_blank"
+    );
+  };
+
+  bubble.appendChild(image);
+}
 
     // ==============================
     // EDITED LABEL
