@@ -3698,10 +3698,10 @@ async function handleCallSignal(signal) {
 if (signal.type === "offer") {
   currentCallId = signal.call_id;
 
-  currentPrivateUser = {
-    id: signal.caller_id,
-    username: "Incoming Caller"
-  };
+ currentPrivateUser = {
+  id: signal.caller_id,
+  username: signal.payload.username || "Caller"
+};
 
   try {
     const stream =
