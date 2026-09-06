@@ -497,7 +497,7 @@
         placeholder="Message #main-chat..."
         autocomplete="off"
       >
-
+}
       <button onclick="sendMessage()">
         ➤
       </button>
@@ -537,13 +537,55 @@ const supabaseClient =
     const chatScreen =
       document.getElementById("chat");
 
-    const statusText =
-      document.getElementById("status");
-    window.addEventListener("error", function(event) {
-  statusText.textContent =
-    "JavaScript error: " + event.message;
-});
+   const statusText =
+  document.getElementById("status");
 
+
+async function uploadAvatar() {
+
+  const fileInput =
+    document.getElementById("avatarInput");
+
+  const file =
+    fileInput.files[0];
+
+  if (!file) {
+    statusText.textContent =
+      "Choose a picture first.";
+    return;
+  }
+
+  const {
+    data: { user }
+  } =
+    await supabaseClient.auth.getUser();
+
+  if (!user) {
+    statusText.textContent =
+      "You need to log in first.";
+    return;
+  }
+
+  const fileName =
+    user.id + "-" +
+    Date.now() + "-" +
+    file.name;
+
+  const { error } =
+    await supabaseClient.storage
+      .from("avatars")
+      .upload(fileName, file);
+
+  if (error) {
+    statusText.textContent =
+      "Upload error: " +
+      error.message;
+    return;
+  }
+
+  statusText.textContent =
+    "Profile picture uploaded! 📸";
+}
 
     async function signUp() {
 
