@@ -1757,14 +1757,14 @@ async function loadMessages() {
       profileMap[item.user_id];
 
     const username =
-      profile?.username ||
-      item.username ||
-      "User";
+  profile && profile.username
+    ? profile.username
+    : (item.username || "User");
 
-    const avatarUrl =
-      profile?.avatar_url ||
-      item.avatar_url ||
-      null;
+const avatarUrl =
+  profile && profile.avatar_url
+    ? profile.avatar_url
+    : (item.avatar_url || null);
 
 
     // ==============================
