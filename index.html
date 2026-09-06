@@ -12,11 +12,11 @@
 async function sendMessage() {
   const { data: { user } } = await supabaseClient.auth.getUser();
 
- if (!user) return;
+  if (!user) return;
 
-alert("Supabase user ID: " + user.id);
+  alert("Supabase user ID: " + user.id);
 
-const username = user.email.split("@")[0];
+  const username = user.email.split("@")[0];
 
   const input = document.getElementById("messageInput");
   const text = input.value.trim();
