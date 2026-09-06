@@ -846,9 +846,11 @@ if (error) {
 }
   input.value = "";
 
-  loadMessages();
-}
+clearTimeout(typingTimeout);
 
+setTyping(false);
+
+loadMessages();
 
     async function loadMessages() {
 
