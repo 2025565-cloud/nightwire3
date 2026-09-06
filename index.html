@@ -636,51 +636,42 @@
     // ==============================
     // SEND MESSAGE
     // ==============================
+async function sendMessage() {
+  const input = document.getElementById("messageInput");
+  const text = input.value.trim();
 
-    async function sendMessage() {
+  if (!text) {
+    return;
+  }
 
-      const input =
-        document.getElementById("messageInput");
+  const {
+    data: { user }
+  } = await supabaseClient.auth.getUser();
 
-      const text =
-        input.value.trim();
+  if (!user) {
+    return;
+  }
 
-      if (!text) {
-        return;
-      }
+  const username = user.email.split("@")[0];
 
-      const {
-        data: { user }
-      } =
-        await supabaseClient.auth.getUser();
+  const { error } =
+    await supabaseClient
+      .from("messages")
+      .insert({
+        user_id: user.id,
+        username: username,
+        message: text
+      });
 
-      if (!user) {
-        return;
-      }
+  if (error) {
+    alert(error.message);
+    return;
+  }
 
-      const username =
-        user.email.split("@")[0];
+  input.value = "";
 
-      const { error } =
-        await supabaseClient
-          .from("messages")
-          .insert({
-            user_id: user.id,
-            username: username,
-            message: text
-          });
-
-      if (error) {
-
-        alert(error.message);
-
-        return;
-      }
-
-      input.value = "";
-
-      loadMessages();
-    }
+  loadMessages();
+}
 
 
     // ==============================
