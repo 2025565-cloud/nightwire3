@@ -3258,26 +3258,6 @@ async function loadPrivateMessages() {
   }
 }
 
-  // Mark received messages as read
-  const unreadMessages =
-    data.filter(item =>
-      item.receiver_id === user.id &&
-      !item.read_at
-    );
-
-  for (const item of unreadMessages) {
-
-    await supabaseClient
-      .from("private_messages")
-      .update({
-        read_at: new Date().toISOString()
-      })
-      .eq("id", item.id);
-
-  }
-
-}
-
 async function sendPrivateMessage() {
 
   const input =
@@ -3367,6 +3347,218 @@ function startPrivateRealtime() {
       )
       .subscribe();
 }
+    // ===============================
+// VOICE + VIDEO CALLING
+// ===============================
+
+let peerConnection = null;
+let localStream = null;
+let currentCallId = null;
+let isMuted = false;
+let cameraEnabled = true;
+
+const rtcConfig = {
+  iceServers: [
+    {
+      urls: "stun:stun.l.google.com:19302"
+    }
+  ]
+};
+
+async function createPeerConnection() {
+  peerConnection = new RTCPeerConnection(rtcConfig);
+
+  peerConnection.onicecandidate = async event => {
+    if (!event.candidate || !currentCallId || !currentPrivateUser) {
+      return;
+    }
+
+    const { data: { user } } =
+      await supabaseClient.auth.getUser();
+
+    if (!user) return;
+
+    await supabaseClient
+      .from("call_signals")
+      .insert({
+        call_id: currentCallId,
+        caller_id: user.id,
+        receiver_id: currentPrivateUser.id,
+        type: "candidate",
+        payload: event.candidate.toJSON()
+      });
+  };
+
+  peerConnection.ontrack = event => {
+    const remoteVideo =
+      document.getElementById("remoteVideo");
+
+    if (remoteVideo) {
+      remoteVideo.srcObject = event.streams[0];
+    }
+  };
+
+  return peerConnection;
+}
+
+async function startVoiceCall() {
+  await startCall(false);
+}
+
+async function startVideoCall() {
+  await startCall(true);
+}
+
+async function startCall(withVideo) {
+  if (!currentPrivateUser) {
+    alert("Choose someone to call first.");
+    return;
+  }
+
+  try {
+    const { data: { user } } =
+      await supabaseClient.auth.getUser();
+
+    if (!user) {
+      alert("You need to be logged in.");
+      return;
+    }
+
+    currentCallId = crypto.randomUUID();
+
+    localStream =
+      await navigator.mediaDevices.getUserMedia({
+        audio: true,
+        video: withVideo
+      });
+
+    const localVideo =
+      document.getElementById("localVideo");
+
+    localVideo.srcObject = localStream;
+
+    if (!withVideo) {
+      localVideo.style.display = "none";
+    } else {
+      localVideo.style.display = "block";
+    }
+
+    document.getElementById("callPanel").style.display = "flex";
+    document.getElementById("callTitle").textContent =
+      withVideo
+        ? "📹 Calling " + currentPrivateUser.username + "..."
+        : "📞 Calling " + currentPrivateUser.username + "...";
+
+    await createPeerConnection();
+
+    localStream.getTracks().forEach(track => {
+      peerConnection.addTrack(track, localStream);
+    });
+
+    const offer =
+      await peerConnection.createOffer();
+
+    await peerConnection.setLocalDescription(offer);
+
+    await supabaseClient
+      .from("call_signals")
+      .insert({
+        call_id: currentCallId,
+        caller_id: user.id,
+        receiver_id: currentPrivateUser.id,
+        type: "offer",
+        payload: {
+          sdp: offer.sdp,
+          type: offer.type,
+          video: withVideo
+        }
+      });
+
+  } catch (error) {
+    console.log("CALL ERROR:", error);
+    alert(
+      "Could not start the call:\n\n" +
+      error.message
+    );
+
+    endCall();
+  }
+}
+
+async function toggleMute() {
+  if (!localStream) return;
+
+  isMuted = !isMuted;
+
+  localStream.getAudioTracks().forEach(track => {
+    track.enabled = !isMuted;
+  });
+
+  document.getElementById("muteButton").textContent =
+    isMuted ? "🔇 Unmute" : "🎙️ Mute";
+}
+
+async function toggleCamera() {
+  if (!localStream) return;
+
+  const videoTracks =
+    localStream.getVideoTracks();
+
+  if (videoTracks.length === 0) {
+    return;
+  }
+
+  cameraEnabled = !cameraEnabled;
+
+  videoTracks.forEach(track => {
+    track.enabled = cameraEnabled;
+  });
+
+  document.getElementById("cameraButton").textContent =
+    cameraEnabled ? "📷 Camera" : "🚫 Camera";
+}
+
+function endCall() {
+  if (localStream) {
+    localStream.getTracks().forEach(track => {
+      track.stop();
+    });
+  }
+
+  if (peerConnection) {
+    peerConnection.close();
+  }
+
+  localStream = null;
+  peerConnection = null;
+  currentCallId = null;
+  isMuted = false;
+  cameraEnabled = true;
+
+  const localVideo =
+    document.getElementById("localVideo");
+
+  const remoteVideo =
+    document.getElementById("remoteVideo");
+
+  if (localVideo) {
+    localVideo.srcObject = null;
+  }
+
+  if (remoteVideo) {
+    remoteVideo.srcObject = null;
+  }
+
+  document.getElementById("callPanel").style.display =
+    "none";
+
+  document.getElementById("muteButton").textContent =
+    "🎙️ Mute";
+
+  document.getElementById("cameraButton").textContent =
+    "📷 Camera";
+}
+    
 async function deletePrivateMessage(messageId) {
   const confirmed = confirm(
     "Delete this private message?"
@@ -3446,6 +3638,51 @@ async function deletePrivateMessage(messageId) {
 
   </div>
 </div>
+
+  
+  let callRealtimeChannel = null;
+
+async function startCallRealtime() {
+  if (callRealtimeChannel) {
+    supabaseClient.removeChannel(callRealtimeChannel);
+  }
+
+  callRealtimeChannel =
+    supabaseClient
+      .channel("call-signals-live")
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "call_signals"
+        },
+        async payload => {
+          await handleCallSignal(payload.new);
+        }
+      )
+      .subscribe();
+}
+
+async function handleCallSignal(signal) {
+  const {
+    data: { user }
+  } = await supabaseClient.auth.getUser();
+
+  if (!user) return;
+
+  // Ignore signals that aren't meant for this user
+  if (
+    signal.receiver_id !== user.id &&
+    signal.caller_id !== user.id
+  ) {
+    return;
+  }
+
+  console.log("CALL SIGNAL:", signal.type);
+}
+  
+  startCallRealtime();
   
 </body>
  </html> 
