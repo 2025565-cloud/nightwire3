@@ -801,8 +801,11 @@ async function uploadAvatar() {
 
 
 async function sendMessage() {
-  const input = document.getElementById("messageInput");
-  const text = input.value.trim();
+  const input =
+    document.getElementById("messageInput");
+
+  const text =
+    input.value.trim();
 
   if (!text) {
     return;
@@ -810,47 +813,52 @@ async function sendMessage() {
 
   const {
     data: { user }
-  } = await supabaseClient.auth.getUser();
+  } =
+    await supabaseClient.auth.getUser();
 
   if (!user) {
     return;
   }
 
- const username = user.email.split("@")[0];
+  const username =
+    user.email.split("@")[0];
 
-const avatar_url =
-  localStorage.getItem("avatarUrl") || null;
+  const avatar_url =
+    localStorage.getItem("avatarUrl") || null;
 
-const { error } =
-  await supabaseClient
-    .from("messages")
-    .insert({
-      user_id: user.id,
-      username: username,
-      avatar_url: avatar_url,
-      message: text
-    });
+  const { error } =
+    await supabaseClient
+      .from("messages")
+      .insert({
+        user_id: user.id,
+        username: username,
+        avatar_url: avatar_url,
+        message: text,
+        read_at: null
+      });
 
-if (error) {
-  alert(
-    "ERROR:\n\n" +
-    error.message +
-    "\n\nCode: " +
-    error.code +
-    "\n\nDetails: " +
-    error.details
-  );
+  if (error) {
+    alert(
+      "ERROR:\n\n" +
+      error.message +
+      "\n\nCode: " +
+      error.code +
+      "\n\nDetails: " +
+      error.details
+    );
 
-  console.log(error);
-  return;
-}
+    console.log(error);
+    return;
+  }
+
   input.value = "";
 
-clearTimeout(typingTimeout);
+  clearTimeout(typingTimeout);
 
-setTyping(false);
+  setTyping(false);
 
-loadMessages();
+  loadMessages();
+}
 
     async function loadMessages() {
 
