@@ -1,620 +1,933 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <style>
-* {
-  box-sizing: border-box;
-}
-
-body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-  background: #0b0d12;
-  color: white;
-}
-
-/* Main chat */
-#chat {
-  width: 100%;
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
-  background:
-    radial-gradient(circle at top left, #20254a 0%, transparent 35%),
-    radial-gradient(circle at bottom right, #151b38 0%, transparent 35%),
-    #0b0d12;
-}
-
-/* Header */
-.chat-header {
-  height: 70px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 0 20px;
-  background: rgba(20, 22, 30, 0.95);
-  border-bottom: 1px solid #292d3a;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-}
-
-.server-icon {
-  width: 42px;
-  height: 42px;
-  border-radius: 14px;
-  background: #5865f2;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: bold;
-  font-size: 18px;
-}
-
-.chat-title {
-  font-size: 17px;
-  font-weight: bold;
-}
-
-.chat-status {
-  font-size: 12px;
-  color: #57f287;
-  margin-top: 3px;
-}
-
-/* Messages */
-#messages {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  padding: 20px;
-  overflow-y: auto;
-}
-
-/* Message row */
-.message-row {
-  display: flex;
-  align-items: flex-end;
-  gap: 9px;
-  max-width: 80%;
-}
-
-.message-row.mine {
-  align-self: flex-end;
-  flex-direction: row-reverse;
-}
-
-/* Profile picture */
-.avatar {
-  width: 38px;
-  height: 38px;
-  min-width: 38px;
-  border-radius: 50%;
-  background: #5865f2;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: bold;
-  font-size: 14px;
-  position: relative;
-}
-
-.online-dot {
-  position: absolute;
-  right: -1px;
-  bottom: -1px;
-  width: 11px;
-  height: 11px;
-  background: #23a55a;
-  border: 2px solid #0b0d12;
-  border-radius: 50%;
-}
-
-/* Message content */
-.message-content {
-  display: flex;
-  flex-direction: column;
-}
-
-.message-row.mine .message-content {
-  align-items: flex-end;
-}
-
-.message-username {
-  font-size: 12px;
-  color: #aeb4c0;
-  margin: 0 0 4px 8px;
-}
-
-.message {
-  max-width: 100%;
-  padding: 10px 14px;
-  border-radius: 18px;
-  background: #252936;
-  color: #f2f3f5;
-  word-wrap: break-word;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-}
-
-.message-row.mine .message {
-  background: #5865f2;
-  color: white;
-  border-bottom-right-radius: 5px;
-}
-
-.message-row:not(.mine) .message {
-  border-bottom-left-radius: 5px;
-}
-
-.message-text {
-  font-size: 15px;
-  line-height: 1.4;
-}
-
-.message-time {
-  font-size: 10px;
-  color: #8f96a3;
-  margin-top: 4px;
-}
-
-/* Message box */
-.send-area {
-  display: flex;
-  gap: 10px;
-  padding: 15px 20px;
-  background: #14161e;
-  border-top: 1px solid #292d3a;
-}
-
-#messageInput {
-  flex: 1;
-  height: 46px;
-  padding: 0 18px;
-  border: none;
-  outline: none;
-  border-radius: 24px;
-  background: #252936;
-  color: white;
-  font-size: 15px;
-}
-
-#messageInput::placeholder {
-  color: #858b98;
-}
-
-#messageInput:focus {
-  box-shadow: 0 0 0 2px #5865f2;
-}
-
-.send-area button {
-  width: 48px;
-  height: 46px;
-  border: none;
-  border-radius: 50%;
-  background: #5865f2;
-  color: white;
-  font-size: 20px;
-  cursor: pointer;
-}
-
-.send-area button:hover {
-  background: #4752c4;
-  transform: scale(1.05);
-}
-
-/* Scrollbar */
-#messages::-webkit-scrollbar {
-  width: 8px;
-}
-
-#messages::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-#messages::-webkit-scrollbar-thumb {
-  background: #303442;
-  border-radius: 10px;
-}
-
-/* Smaller screens */
-@media (max-width: 600px) {
-  #messages {
-    padding: 12px;
-  }
-
-  .message-row {
-    max-width: 90%;
-  }
-
-  .send-area {
-    padding: 10px;
-  }
-}/* Login screen */
-.screen {
-  max-width: 500px;
-  margin: auto;
-  padding: 30px 20px;
-}
-
-#auth {
-  min-height: 100vh;
-}
-
-#auth h1 {
-  text-align: center;
-}
-
-#auth input {
-  width: 100%;
-  padding: 13px;
-  margin: 7px 0;
-  border: none;
-  border-radius: 10px;
-  background: #252936;
-  color: white;
-}
-
-#auth button {
-  padding: 12px 18px;
-  margin: 7px 3px;
-  border: none;
-  border-radius: 20px;
-  background: #5865f2;
-  color: white;
-  cursor: pointer;
-}
-
-#auth button:hover {
-  background: #4752c4;
-}
-
-#status {
-  text-align: center;
-  color: #aaa;
-}
-
-/* Logout button */
-.logout-button {
-  margin-left: auto;
-  padding: 9px 14px;
-  border: none;
-  border-radius: 18px;
-  background: #252936;
-  color: #b5bac1;
-  cursor: pointer;
-}
-
-.logout-button:hover {
-  background: #ed4245;
-  color: white;
-}
-</style>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>My Messaging Website</title>
 
- <!-- Supabase -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
 
-<script>
-async function sendMessage() {
-  const { data: { user } } = await supabaseClient.auth.getUser();
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #0b0d12;
+      color: white;
+    }
 
-  if (!user) return;
+    /* =========================
+       LOGIN SCREEN
+       ========================= */
 
- alert("USER ID: " + user.id);
+    #auth {
+      min-height: 100vh;
+      max-width: 500px;
+      margin: auto;
+      padding: 60px 20px;
+    }
 
-  const username = user.email.split("@")[0];
+    #auth h1 {
+      text-align: center;
+      margin-bottom: 30px;
+    }
 
-  const input = document.getElementById("messageInput");
-  const text = input.value.trim();
+    #auth input {
+      width: 100%;
+      padding: 14px;
+      margin: 7px 0;
+      border: none;
+      outline: none;
+      border-radius: 10px;
+      background: #252936;
+      color: white;
+      font-size: 15px;
+    }
 
-  if (!text) return;
+    #auth input:focus {
+      box-shadow: 0 0 0 2px #5865f2;
+    }
 
-  const { error } = await supabaseClient
-    .from("messages")
-    .insert({
-user_id: user.id,
-  username: user.email.split("@")[0],
-  message: text
-});
+    #auth button {
+      padding: 12px 20px;
+      margin: 10px 3px;
+      border: none;
+      border-radius: 20px;
+      background: #5865f2;
+      color: white;
+      cursor: pointer;
+      font-size: 14px;
+    }
 
-  if (error) {
-  alert(
-    "ERROR:\n" +
-    "Message: " + error.message + "\n" +
-    "Details: " + error.details + "\n" +
-    "Hint: " + error.hint
-  );
-  return;
-}
+    #auth button:hover {
+      background: #4752c4;
+    }
 
-  input.value = "";
-}
-</script>
+    #status {
+      text-align: center;
+      color: #aaa;
+      min-height: 20px;
+      margin-top: 15px;
+    }
 
+    /* =========================
+       CHAT
+       ========================= */
+
+    #chat {
+      width: 100%;
+      height: 100vh;
+      display: none;
+      flex-direction: column;
+
+      background:
+        radial-gradient(
+          circle at top left,
+          #20254a 0%,
+          transparent 35%
+        ),
+        radial-gradient(
+          circle at bottom right,
+          #151b38 0%,
+          transparent 35%
+        ),
+        #0b0d12;
+    }
+
+    /* Header */
+
+    .chat-header {
+      height: 70px;
+      min-height: 70px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 0 20px;
+
+      background: rgba(20, 22, 30, 0.95);
+      border-bottom: 1px solid #292d3a;
+
+      box-shadow:
+        0 2px 10px rgba(0, 0, 0, 0.3);
+    }
+
+    .server-icon {
+      width: 42px;
+      height: 42px;
+      min-width: 42px;
+
+      border-radius: 14px;
+
+      background: #5865f2;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      font-weight: bold;
+      font-size: 18px;
+    }
+
+    .chat-info {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .chat-title {
+      font-size: 17px;
+      font-weight: bold;
+    }
+
+    .chat-status {
+      font-size: 12px;
+      color: #57f287;
+      margin-top: 3px;
+    }
+
+    /* Logout */
+
+    .logout-button {
+      margin-left: auto;
+
+      padding: 9px 14px;
+
+      border: none;
+      border-radius: 18px;
+
+      background: #252936;
+      color: #b5bac1;
+
+      cursor: pointer;
+    }
+
+    .logout-button:hover {
+      background: #ed4245;
+      color: white;
+    }
+
+    /* Messages */
+
+    #messages {
+      flex: 1;
+
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+
+      padding: 20px;
+
+      overflow-y: auto;
+    }
+
+    /* Message row */
+
+    .message-row {
+      display: flex;
+      align-items: flex-end;
+      gap: 9px;
+
+      max-width: 80%;
+    }
+
+    .message-row.mine {
+      align-self: flex-end;
+      flex-direction: row-reverse;
+    }
+
+    /* Avatar */
+
+    .avatar {
+      width: 38px;
+      height: 38px;
+      min-width: 38px;
+
+      border-radius: 50%;
+
+      background: #5865f2;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      font-weight: bold;
+      font-size: 14px;
+
+      position: relative;
+    }
+
+    .online-dot {
+      position: absolute;
+
+      right: -1px;
+      bottom: -1px;
+
+      width: 11px;
+      height: 11px;
+
+      background: #23a55a;
+
+      border: 2px solid #0b0d12;
+
+      border-radius: 50%;
+    }
+
+    /* Message content */
+
+    .message-content {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .message-row.mine .message-content {
+      align-items: flex-end;
+    }
+
+    .message-username {
+      font-size: 12px;
+      color: #aeb4c0;
+
+      margin: 0 0 4px 8px;
+    }
+
+    /* Message bubble */
+
+    .message {
+      max-width: 100%;
+
+      padding: 10px 14px;
+
+      border-radius: 18px;
+
+      background: #252936;
+      color: #f2f3f5;
+
+      word-wrap: break-word;
+
+      box-shadow:
+        0 2px 5px rgba(0, 0, 0, 0.2);
+    }
+
+    .message-row.mine .message {
+      background: #5865f2;
+      color: white;
+
+      border-bottom-right-radius: 5px;
+    }
+
+    .message-row:not(.mine) .message {
+      border-bottom-left-radius: 5px;
+    }
+
+    .message-text {
+      font-size: 15px;
+      line-height: 1.4;
+    }
+
+    .message-time {
+      font-size: 10px;
+      color: #8f96a3;
+
+      margin-top: 4px;
+    }
+
+    /* Message box */
+
+    .send-area {
+      display: flex;
+      gap: 10px;
+
+      padding: 15px 20px;
+
+      background: #14161e;
+
+      border-top: 1px solid #292d3a;
+    }
+
+    #messageInput {
+      flex: 1;
+
+      height: 46px;
+
+      padding: 0 18px;
+
+      border: none;
+      outline: none;
+
+      border-radius: 24px;
+
+      background: #252936;
+      color: white;
+
+      font-size: 15px;
+    }
+
+    #messageInput::placeholder {
+      color: #858b98;
+    }
+
+    #messageInput:focus {
+      box-shadow: 0 0 0 2px #5865f2;
+    }
+
+    .send-area button {
+      width: 48px;
+      height: 46px;
+
+      border: none;
+      border-radius: 50%;
+
+      background: #5865f2;
+      color: white;
+
+      font-size: 20px;
+
+      cursor: pointer;
+    }
+
+    .send-area button:hover {
+      background: #4752c4;
+      transform: scale(1.05);
+    }
+
+    /* Scrollbar */
+
+    #messages::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    #messages::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    #messages::-webkit-scrollbar-thumb {
+      background: #303442;
+      border-radius: 10px;
+    }
+
+    /* Smaller screens */
+
+    @media (max-width: 600px) {
+      #messages {
+        padding: 12px;
+      }
+
+      .message-row {
+        max-width: 90%;
+      }
+
+      .send-area {
+        padding: 10px;
+      }
+
+      .chat-header {
+        padding: 0 12px;
+      }
+
+      .logout-button {
+        padding: 8px 10px;
+      }
+    }
+  </style>
 </head>
 
 <body>
 
-  <!-- LOGIN / SIGN UP -->
-  <div id="auth" class="screen">
+  <!-- =========================
+       LOGIN / SIGN UP
+       ========================= -->
+
+  <div id="auth">
+
     <h1>💬 My Messages</h1>
 
-    <input id="email" type="email" placeholder="Email">
-    <input id="password" type="password" placeholder="Password">
+    <input
+      id="email"
+      type="email"
+      placeholder="Email"
+      autocomplete="email"
+    >
 
-    <div style="text-align:center;">
-      <button onclick="signUp()">Sign Up</button>
-      <button onclick="logIn()">Log In</button>
+    <input
+      id="password"
+      type="password"
+      placeholder="Password"
+      autocomplete="current-password"
+    >
+
+    <div style="text-align: center;">
+
+      <button onclick="signUp()">
+        Sign Up
+      </button>
+
+      <button onclick="logIn()">
+        Log In
+      </button>
+
     </div>
 
     <p id="status"></p>
+
   </div>
 
-  <!-- CHAT -->
-<div id="chat" class="screen">
 
-  <div class="chat-header">
+  <!-- =========================
+       CHAT
+       ========================= -->
 
-    <div class="server-icon">
-      M
-    </div>
+  <div id="chat">
 
-    <div class="chat-info">
-      <div class="chat-title">
-        Main Chat
+    <!-- Header -->
+
+    <div class="chat-header">
+
+      <div class="server-icon">
+        M
       </div>
 
-      <div class="chat-status">
-        ● Online
+      <div class="chat-info">
+
+        <div class="chat-title">
+          Main Chat
+        </div>
+
+        <div class="chat-status">
+          ● Online
+        </div>
+
       </div>
+
+      <button
+        class="logout-button"
+        onclick="logOut()"
+      >
+        Log Out
+      </button>
+
     </div>
 
-    <button class="logout-button" onclick="logOut()">
-      Log Out
-    </button>
+
+    <!-- Messages -->
+
+    <div id="messages"></div>
+
+
+    <!-- Message Input -->
+
+    <div class="send-area">
+
+      <input
+        id="messageInput"
+        type="text"
+        placeholder="Message #main-chat..."
+        autocomplete="off"
+      >
+
+      <button onclick="sendMessage()">
+        ➤
+      </button>
+
+    </div>
 
   </div>
 
-  <div id="messages"></div>
 
-  <div class="send-area">
+  <!-- =========================
+       SUPABASE
+       ========================= -->
 
-    <input
-      id="messageInput"
-      type="text"
-      placeholder="Message #main-chat..."
-      autocomplete="off"
-    >
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-    <button onclick="sendMessage()">
-      ➤
-    </button>
-
-  </div>
-
-</div>
   <script>
+
     // ==============================
-    // PUT YOUR SUPABASE INFORMATION HERE
+    // SUPABASE INFORMATION
     // ==============================
 
-    const SUPABASE_URL = "https://iwawfcnfgogfkognlcij.supabase.co";
-    const SUPABASE_KEY = "sb_publishable_2r705Lr5VJaXL-R7XcQfFw_FH--UiIh";
+    const SUPABASE_URL =
+      "https://iwawfcnfgogfkognlcij.supabase.co";
 
+    /*
+      IMPORTANT:
+      Put your existing SUPABASE PUBLISHABLE KEY
+      between the quotation marks below.
+    */
+
+    const SUPABASE_KEY =
+      "YOUR_PUBLISHABLE_KEY_HERE";
+
+
+    // ==============================
+    // CREATE SUPABASE CONNECTION
     // ==============================
 
     const supabaseClient =
-      window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+      window.supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_KEY
+      );
 
-    const authScreen = document.getElementById("auth");
-    const chatScreen = document.getElementById("chat");
-    const statusText = document.getElementById("status");
+
+    // ==============================
+    // GET HTML ELEMENTS
+    // ==============================
+
+    const authScreen =
+      document.getElementById("auth");
+
+    const chatScreen =
+      document.getElementById("chat");
+
+    const statusText =
+      document.getElementById("status");
+
+
+    // ==============================
+    // SIGN UP
+    // ==============================
 
     async function signUp() {
-      const email = document.getElementById("email").value;
-      const password = document.getElementById("password").value;
+
+      const email =
+        document.getElementById("email").value.trim();
+
+      const password =
+        document.getElementById("password").value;
 
       if (!email || !password) {
-        statusText.textContent = "Enter an email and password.";
+
+        statusText.textContent =
+          "Enter an email and password.";
+
         return;
       }
 
-      const { error } = await supabaseClient.auth.signUp({
-        email: email,
-        password: password
-      });
-
-      if (error) {
-        statusText.textContent = error.message;
-      } else {
-        statusText.textContent =
-          "Account created! Check your email if confirmation is required.";
-      }
-    }
-
-    async function logIn() {
-      const email = document.getElementById("email").value;
-      const password = document.getElementById("password").value;
-
-      const { error } = await supabaseClient.auth.signInWithPassword({
-        email: email,
-        password: password
-      });
-
-      if (error) {
-        statusText.textContent = error.message;
-      }
-    }
-
-    async function logOut() {
-      await supabaseClient.auth.signOut();
-    }
-
-    async function sendMessage() {
-      const input = document.getElementById("messageInput");
-      const text = input.value.trim();
-
-      if (!text) return;
-
-      const {
-        data: { user }
-      } = await supabaseClient.auth.getUser();
-
-      if (!user) return;
-
-      const username = user.email.split("@")[0];
-
-      const { error } = await supabaseClient
-        .from("messages")
-        .insert({
-          user_id: user.id,
-          username: username,
-          message: text
+      const { error } =
+        await supabaseClient.auth.signUp({
+          email: email,
+          password: password
         });
 
       if (error) {
+
+        statusText.textContent =
+          error.message;
+
+      } else {
+
+        statusText.textContent =
+          "Account created! You can now log in.";
+      }
+    }
+
+
+    // ==============================
+    // LOG IN
+    // ==============================
+
+    async function logIn() {
+
+      const email =
+        document.getElementById("email").value.trim();
+
+      const password =
+        document.getElementById("password").value;
+
+      if (!email || !password) {
+
+        statusText.textContent =
+          "Enter an email and password.";
+
+        return;
+      }
+
+      statusText.textContent =
+        "Logging in...";
+
+      const { error } =
+        await supabaseClient.auth.signInWithPassword({
+          email: email,
+          password: password
+        });
+
+      if (error) {
+
+        statusText.textContent =
+          error.message;
+
+      } else {
+
+        statusText.textContent = "";
+      }
+    }
+
+
+    // ==============================
+    // LOG OUT
+    // ==============================
+
+    async function logOut() {
+
+      await supabaseClient.auth.signOut();
+    }
+
+
+    // ==============================
+    // SEND MESSAGE
+    // ==============================
+
+    async function sendMessage() {
+
+      const input =
+        document.getElementById("messageInput");
+
+      const text =
+        input.value.trim();
+
+      if (!text) {
+        return;
+      }
+
+      const {
+        data: { user }
+      } =
+        await supabaseClient.auth.getUser();
+
+      if (!user) {
+        return;
+      }
+
+      const username =
+        user.email.split("@")[0];
+
+      const { error } =
+        await supabaseClient
+          .from("messages")
+          .insert({
+            user_id: user.id,
+            username: username,
+            message: text
+          });
+
+      if (error) {
+
         alert(error.message);
+
         return;
       }
 
       input.value = "";
+
       loadMessages();
     }
-async function loadMessages() {
-  const {
-    data: { user }
-  } = await supabaseClient.auth.getUser();
 
-  const { data, error } = await supabaseClient
-    .from("messages")
-    .select("*")
-    .order("created_at", { ascending: true });
 
-  if (error) {
-    console.log(error);
-    return;
-  }
+    // ==============================
+    // LOAD MESSAGES
+    // ==============================
 
-  const container = document.getElementById("messages");
-  container.innerHTML = "";
+    async function loadMessages() {
 
-  data.forEach(item => {
+      const {
+        data: { user }
+      } =
+        await supabaseClient.auth.getUser();
 
-    const row = document.createElement("div");
 
-    const isMine =
-      user && item.user_id === user.id;
+      const { data, error } =
+        await supabaseClient
+          .from("messages")
+          .select("*")
+          .order(
+            "created_at",
+            { ascending: true }
+          );
 
-    row.className =
-      "message-row" + (isMine ? " mine" : "");
 
-    // Profile picture
-    const avatar = document.createElement("div");
-    avatar.className = "avatar";
+      if (error) {
 
-    const username =
-      item.username || "User";
+        console.log(error);
 
-    avatar.textContent =
-      username.charAt(0).toUpperCase();
+        return;
+      }
 
-    // Online indicator
-    const onlineDot =
-      document.createElement("div");
 
-    onlineDot.className =
-      "online-dot";
+      const container =
+        document.getElementById("messages");
 
-    avatar.appendChild(onlineDot);
+      container.innerHTML = "";
 
-    // Message content
-    const content =
-      document.createElement("div");
 
-    content.className =
-      "message-content";
+      data.forEach(item => {
 
-    // Username
-    const name =
-      document.createElement("div");
+        // Message row
 
-    name.className =
-      "message-username";
+        const row =
+          document.createElement("div");
 
-    name.textContent =
-      username;
 
-    // Message bubble
-    const bubble =
-      document.createElement("div");
+        const isMine =
+          user &&
+          item.user_id === user.id;
 
-    bubble.className =
-      "message";
 
-    const text =
-      document.createElement("div");
+        row.className =
+          "message-row" +
+          (isMine ? " mine" : "");
 
-    text.className =
-      "message-text";
 
-    text.textContent =
-      item.message || "";
+        // Avatar
 
-    bubble.appendChild(text);
+        const avatar =
+          document.createElement("div");
 
-    // Time
-    const time =
-      document.createElement("div");
+        avatar.className =
+          "avatar";
 
-    time.className =
-      "message-time";
 
-    time.textContent =
-      new Date(item.created_at)
-        .toLocaleTimeString([], {
-          hour: "numeric",
-          minute: "2-digit"
-        });
+        const username =
+          item.username || "User";
 
-    content.appendChild(name);
-    content.appendChild(bubble);
-    content.appendChild(time);
 
-    row.appendChild(avatar);
-    row.appendChild(content);
+        avatar.textContent =
+          username
+            .charAt(0)
+            .toUpperCase();
 
-    container.appendChild(row);
-  });
 
-  container.scrollTop =
-    container.scrollHeight;
-}
-function showChat() {
-  authScreen.style.display = "none";
-  chatScreen.style.display = "flex";
-  loadMessages();
-}
-    function showLogin() {
-      authScreen.style.display = "block";
-      chatScreen.style.display = "none";
+        // Online indicator
+
+        const onlineDot =
+          document.createElement("div");
+
+        onlineDot.className =
+          "online-dot";
+
+        avatar.appendChild(
+          onlineDot
+        );
+
+
+        // Message content
+
+        const content =
+          document.createElement("div");
+
+        content.className =
+          "message-content";
+
+
+        // Username
+
+        const name =
+          document.createElement("div");
+
+        name.className =
+          "message-username";
+
+        name.textContent =
+          username;
+
+
+        // Message bubble
+
+        const bubble =
+          document.createElement("div");
+
+        bubble.className =
+          "message";
+
+
+        // Message text
+
+        const text =
+          document.createElement("div");
+
+        text.className =
+          "message-text";
+
+        text.textContent =
+          item.message || "";
+
+
+        bubble.appendChild(text);
+
+
+        // Time
+
+        const time =
+          document.createElement("div");
+
+        time.className =
+          "message-time";
+
+
+        time.textContent =
+          new Date(item.created_at)
+            .toLocaleTimeString(
+              [],
+              {
+                hour: "numeric",
+                minute: "2-digit"
+              }
+            );
+
+
+        // Put everything together
+
+        content.appendChild(name);
+
+        content.appendChild(bubble);
+
+        content.appendChild(time);
+
+
+        row.appendChild(avatar);
+
+        row.appendChild(content);
+
+
+        container.appendChild(row);
+
+      });
+
+
+      // Scroll to newest message
+
+      container.scrollTop =
+        container.scrollHeight;
     }
 
-    supabaseClient.auth.onAuthStateChange((event, session) => {
-      if (session) {
-        showChat();
-      } else {
-        showLogin();
+
+    // ==============================
+    // SHOW CHAT
+    // ==============================
+
+    function showChat() {
+
+      authScreen.style.display =
+        "none";
+
+      chatScreen.style.display =
+        "flex";
+
+      loadMessages();
+    }
+
+
+    // ==============================
+    // SHOW LOGIN
+    // ==============================
+
+    function showLogin() {
+
+      authScreen.style.display =
+        "block";
+
+      chatScreen.style.display =
+        "none";
+    }
+
+
+    // ==============================
+    // WATCH LOGIN STATUS
+    // ==============================
+
+    supabaseClient.auth.onAuthStateChange(
+      (event, session) => {
+
+        if (session) {
+
+          showChat();
+
+        } else {
+
+          showLogin();
+        }
+
       }
-    });
+    );
+
+
+    // ==============================
+    // ENTER KEY SENDS MESSAGE
+    // ==============================
 
     document
       .getElementById("messageInput")
-      .addEventListener("keydown", function(event) {
-        if (event.key === "Enter") {
-          sendMessage();
+      .addEventListener(
+        "keydown",
+        function(event) {
+
+          if (event.key === "Enter") {
+
+            sendMessage();
+          }
+
         }
-      });
+      );
+
   </script>
 
 </body>
