@@ -1150,15 +1150,18 @@ async function markMessagesAsRead() {
       editButton.className =
         "edit-button";
 
-      editButton.onclick = () => {
+      eeditButton.onclick = () => {
 
-        editMessage(
-  item.Id,
-  item.message
+  editMessage(
+    item.Id,
+    item.message
+  );
+
+};
+
+content.appendChild(
+  editButton
 );
-      content.appendChild(
-        editButton
-      );
     }
 
 
