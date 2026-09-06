@@ -898,6 +898,45 @@ body {
   white-space: nowrap;
 }
     
+    .private-user-button {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  margin-bottom: 6px;
+
+  background: #2b2d31;
+  color: white;
+
+  border: 1px solid #40444b;
+  border-radius: 8px;
+
+  cursor: pointer;
+  text-align: left;
+
+  transition: 0.15s;
+}
+
+.private-user-button:hover {
+  background: #40444b;
+}
+
+.private-user-avatar {
+  width: 40px;
+  height: 40px;
+
+  border-radius: 50%;
+  object-fit: cover;
+
+  background: #1e1f22;
+}
+
+.private-user-button span {
+  font-size: 15px;
+  font-weight: 600;
+}
+    
   </style>
 </head>
 
@@ -978,13 +1017,19 @@ body {
 >
   👤 Profile
 </button>
-  
   <button
-    class="logout-button"
-    onclick="logOut()"
-  >
-    Log Out
-  </button>
+  class="profile-button"
+  onclick="openPrivateChats()"
+>
+  💬 Private
+</button>
+
+<button
+  class="logout-button"
+  onclick="logOut()"
+>
+  Log Out
+</button>
 
 </div>
     
@@ -1025,6 +1070,35 @@ body {
 
 </div>
 
+    <!-- =========================
+     PRIVATE CHATS
+     ========================= -->
+
+<div
+  id="privateChatPanel"
+  class="profile-panel"
+>
+
+  <div class="profile-box">
+
+    <h2>💬 Private Chats</h2>
+
+    <div id="privateUserList">
+      Loading users...
+    </div>
+
+    <div class="profile-buttons">
+
+      <button onclick="closePrivateChats()">
+        Close
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
+    
 <!-- Messages -->
 
 <div id="messages"></div>
@@ -2702,8 +2776,138 @@ document
   loadMessages();
 }
 
+    let currentPrivateUser = null;
+
+async function openPrivateChats() {
+
+  const panel =
+    document.getElementById("privateChatPanel");
+
+  panel.style.display = "flex";
+
+  await loadPrivateUsers();
+}
+
+
+function closePrivateChats() {
+
+  document.getElementById(
+    "privateChatPanel"
+  ).style.display = "none";
+
+}
+
+
+async function loadPrivateUsers() {
+
+  const userList =
+    document.getElementById("privateUserList");
+
+  userList.textContent =
+    "Loading users...";
+
+  const {
+    data: { user }
+  } =
+    await supabaseClient.auth.getUser();
+
+  if (!user) {
+
+    userList.textContent =
+      "You need to log in first.";
+
+    return;
+  }
+
+
+  const {
+    data: profiles,
+    error
+  } =
+    await supabaseClient
+      .from("profiles")
+      .select("id, username, avatar_url")
+      .neq("id", user.id)
+      .order("username");
+
+
+  if (error) {
+
+    console.log(
+      "Private users error:",
+      error
+    );
+
+    userList.textContent =
+      "Could not load users.";
+
+    return;
+  }
+
+
+  userList.innerHTML = "";
+
+
+  if (!profiles || profiles.length === 0) {
+
+    userList.textContent =
+      "No other users yet.";
+
+    return;
+  }
+
+
+  profiles.forEach(profile => {
+
+    const button =
+      document.createElement("button");
+
+    button.className =
+      "private-user-button";
+
+
+    const avatar =
+      document.createElement("img");
+
+    avatar.src =
+      profile.avatar_url ||
+      "https://via.placeholder.com/40";
+
+    avatar.className =
+      "private-user-avatar";
+
+
+    const name =
+      document.createElement("span");
+
+    name.textContent =
+      profile.username ||
+      "Unknown User";
+
+
+    button.appendChild(avatar);
+    button.appendChild(name);
+
+
+    button.onclick = () => {
+
+      openPrivateChat(
+        profile.id,
+        profile.username ||
+        "Unknown User"
+      );
+
+    };
+
+
+    userList.appendChild(button);
+
+  });
+
+}
  
   </script>
 
 </body>
+ </html> 
 </html>
