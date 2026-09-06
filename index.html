@@ -228,6 +228,64 @@ body {
   .send-area {
     padding: 10px;
   }
+}/* Login screen */
+.screen {
+  max-width: 500px;
+  margin: auto;
+  padding: 30px 20px;
+}
+
+#auth {
+  min-height: 100vh;
+}
+
+#auth h1 {
+  text-align: center;
+}
+
+#auth input {
+  width: 100%;
+  padding: 13px;
+  margin: 7px 0;
+  border: none;
+  border-radius: 10px;
+  background: #252936;
+  color: white;
+}
+
+#auth button {
+  padding: 12px 18px;
+  margin: 7px 3px;
+  border: none;
+  border-radius: 20px;
+  background: #5865f2;
+  color: white;
+  cursor: pointer;
+}
+
+#auth button:hover {
+  background: #4752c4;
+}
+
+#status {
+  text-align: center;
+  color: #aaa;
+}
+
+/* Logout button */
+.logout-button {
+  margin-left: auto;
+  padding: 9px 14px;
+  border: none;
+  border-radius: 18px;
+  background: #252936;
+  color: #b5bac1;
+  cursor: pointer;
+}
+
+.logout-button:hover {
+  background: #ed4245;
+  color: white;
 }
 </style>
   <meta charset="UTF-8">
@@ -377,21 +435,48 @@ user_id: user.id,
   </div>
 
   <!-- CHAT -->
-  <div id="chat" class="screen">
-    <h1>💬 Chat</h1>
+<div id="chat" class="screen">
 
-    <div style="text-align:center;">
-      <button onclick="logOut()">Log Out</button>
+  <div class="chat-header">
+
+    <div class="server-icon">
+      M
     </div>
 
-    <div id="messages"></div>
+    <div class="chat-info">
+      <div class="chat-title">
+        Main Chat
+      </div>
 
-    <div class="send-area">
-      <input id="messageInput" type="text" placeholder="Type a message...">
-      <button onclick="sendMessage()">Send</button>
+      <div class="chat-status">
+        ● Online
+      </div>
     </div>
+
+    <button class="logout-button" onclick="logOut()">
+      Log Out
+    </button>
+
   </div>
 
+  <div id="messages"></div>
+
+  <div class="send-area">
+
+    <input
+      id="messageInput"
+      type="text"
+      placeholder="Message #main-chat..."
+      autocomplete="off"
+    >
+
+    <button onclick="sendMessage()">
+      ➤
+    </button>
+
+  </div>
+
+</div>
   <script>
     // ==============================
     // PUT YOUR SUPABASE INFORMATION HERE
@@ -498,42 +583,96 @@ async function loadMessages() {
   container.innerHTML = "";
 
   data.forEach(item => {
-    const message = document.createElement("div");
 
-    // Put your own messages on the right
-    message.className =
-      "message" + (user && item.user_id === user.id ? " mine" : "");
+    const row = document.createElement("div");
 
-    const username = document.createElement("div");
-    username.className = "message-username";
-    username.textContent = item.username || "User";
+    const isMine =
+      user && item.user_id === user.id;
 
-    const text = document.createElement("div");
-    text.className = "message-text";
-    text.textContent = item.message || "";
+    row.className =
+      "message-row" + (isMine ? " mine" : "");
 
-    const time = document.createElement("div");
-    time.className = "message-time";
-    time.textContent = new Date(item.created_at).toLocaleTimeString([], {
-      hour: "numeric",
-      minute: "2-digit"
-    });
+    // Profile picture
+    const avatar = document.createElement("div");
+    avatar.className = "avatar";
 
-    message.appendChild(username);
-    message.appendChild(text);
-    message.appendChild(time);
+    const username =
+      item.username || "User";
 
-    container.appendChild(message);
+    avatar.textContent =
+      username.charAt(0).toUpperCase();
+
+    // Online indicator
+    const onlineDot =
+      document.createElement("div");
+
+    onlineDot.className =
+      "online-dot";
+
+    avatar.appendChild(onlineDot);
+
+    // Message content
+    const content =
+      document.createElement("div");
+
+    content.className =
+      "message-content";
+
+    // Username
+    const name =
+      document.createElement("div");
+
+    name.className =
+      "message-username";
+
+    name.textContent =
+      username;
+
+    // Message bubble
+    const bubble =
+      document.createElement("div");
+
+    bubble.className =
+      "message";
+
+    const text =
+      document.createElement("div");
+
+    text.className =
+      "message-text";
+
+    text.textContent =
+      item.message || "";
+
+    bubble.appendChild(text);
+
+    // Time
+    const time =
+      document.createElement("div");
+
+    time.className =
+      "message-time";
+
+    time.textContent =
+      new Date(item.created_at)
+        .toLocaleTimeString([], {
+          hour: "numeric",
+          minute: "2-digit"
+        });
+
+    content.appendChild(name);
+    content.appendChild(bubble);
+    content.appendChild(time);
+
+    row.appendChild(avatar);
+    row.appendChild(content);
+
+    container.appendChild(row);
   });
 
-  container.scrollTop = container.scrollHeight;
+  container.scrollTop =
+    container.scrollHeight;
 }
-
-    function showChat() {
-      authScreen.style.display = "none";
-      chatScreen.style.display = "block";
-      loadMessages();
-    }
 
     function showLogin() {
       authScreen.style.display = "block";
