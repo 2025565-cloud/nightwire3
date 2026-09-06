@@ -970,7 +970,50 @@ function updateTypingIndicator() {
 
   }
 }
+// ==============================
+// ONLINE / OFFLINE STATUS
+// ==============================
 
+const onlineStatus =
+  document.getElementById("onlineStatus");
+
+function updateOnlineStatus() {
+
+  if (!onlineStatus) {
+    return;
+  }
+
+  if (navigator.onLine) {
+
+    onlineStatus.textContent =
+      "● Online";
+
+    onlineStatus.style.color =
+      "#57f287";
+
+  } else {
+
+    onlineStatus.textContent =
+      "● Offline";
+
+    onlineStatus.style.color =
+      "#ed4245";
+
+  }
+}
+
+window.addEventListener(
+  "online",
+  updateOnlineStatus
+);
+
+window.addEventListener(
+  "offline",
+  updateOnlineStatus
+);
+
+updateOnlineStatus();
+    
     const authScreen =
       document.getElementById("auth");
 
