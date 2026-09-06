@@ -26,7 +26,7 @@ async function sendMessage() {
   const { error } = await supabaseClient
     .from("messages")
     .insert({
-  user_id: "31caf2d0-41f6-4c78-bb60-f37e13d99029",
+user_id: user.id,
   username: user.email.split("@")[0],
   message: text
 });
