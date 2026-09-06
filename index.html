@@ -3597,8 +3597,6 @@ async function startCallRealtime() {
     supabaseClient.removeChannel(callRealtimeChannel);
   }
 
-  const status = document.getElementById("status");
-
   callRealtimeChannel =
     supabaseClient
       .channel("call-signals-live")
@@ -3610,20 +3608,15 @@ async function startCallRealtime() {
           table: "call_signals"
         },
         async payload => {
-          if (status) {
-            status.textContent = "📞 Call signal received!";
-          }
-
+          alert("📞 CALL SIGNAL RECEIVED!");
           await handleCallSignal(payload.new);
         }
       )
-      .subscribe(connectionStatus => {
-        if (status) {
-          status.textContent =
-            "📡 Call connection: " + connectionStatus;
-        }
+      .subscribe(status => {
+        alert("📡 CALL REALTIME STATUS: " + status);
       });
 }
+    
 async function handleCallSignal(signal) {
   const {
     data: { user }
