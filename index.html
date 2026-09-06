@@ -1379,7 +1379,16 @@ async function saveProfile() {
 
   profileStatus.textContent =
     "Profile saved! ✅";
+  
+// Update username on existing messages
+await supabaseClient
+  .from("messages")
+  .update({
+    username: username
+  })
+  .eq("user_id", user.id);
 
+  
   loadMessages();
 
   setTimeout(() => {
