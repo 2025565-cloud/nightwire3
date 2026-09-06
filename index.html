@@ -626,17 +626,21 @@ async function sendMessage() {
     return;
   }
 
-  const username = user.email.split("@")[0];
+ const username = user.email.split("@")[0];
 
-  const { error } =
-    await supabaseClient
-      .from("messages")
-      .insert({
-        user_id: user.id,
-        username: username,
-        message: text
-      });
+const avatar_url =
+  "https://api.dicebear.com/9.x/adventurer/svg?seed=" +
+  encodeURIComponent(username);
 
+const { error } =
+  await supabaseClient
+    .from("messages")
+    .insert({
+      user_id: user.id,
+      username: username,
+      avatar_url: avatar_url,
+      message: text
+    });
  if (error) {
 
   alert(
