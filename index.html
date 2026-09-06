@@ -3228,7 +3228,6 @@ async function sendPrivateMessage() {
     let privateRealtimeChannel = null;
 
 function startPrivateRealtime() {
-
   if (privateRealtimeChannel) {
     supabaseClient.removeChannel(
       privateRealtimeChannel
@@ -3238,26 +3237,22 @@ function startPrivateRealtime() {
   privateRealtimeChannel =
     supabaseClient
       .channel("private-messages-live")
-
       .on(
         "postgres_changes",
         {
-          event: "INSERT",
+          event: "*",
           schema: "public",
           table: "private_messages"
         },
         async () => {
-
           if (currentPrivateUser) {
             await loadPrivateMessages();
           }
-
         }
       )
-
       .subscribe();
 }
- 
+    
   </script>
 
 </body>
