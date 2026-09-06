@@ -3466,12 +3466,13 @@ async function startCall(withVideo) {
         call_id: currentCallId,
         caller_id: user.id,
         receiver_id: currentPrivateUser.id,
-        type: "offer",
-        payload: {
-          sdp: offer.sdp,
-          type: offer.type,
-          video: withVideo
-        }
+     type: "offer",
+payload: {
+  sdp: offer.sdp,
+  type: offer.type,
+  video: withVideo,
+  username: user.user_metadata?.username || "Caller"
+}
       });
 
   } catch (error) {
