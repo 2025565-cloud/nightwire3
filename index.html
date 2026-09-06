@@ -654,6 +654,38 @@ body {
     height: 44px;
   }
 }
+    .message-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.edit-button,
+.delete-button {
+  border: none;
+  background: transparent;
+  font-size: 10px;
+  cursor: pointer;
+  padding: 2px 5px;
+  transition: 0.2s;
+}
+
+.edit-button {
+  color: #747b89;
+}
+
+.edit-button:hover {
+  color: #5865f2;
+}
+
+.delete-button {
+  color: #747b89;
+}
+
+.delete-button:hover {
+  color: #ed4245;
+}
+    
   </style>
 </head>
 
@@ -1205,54 +1237,6 @@ async function editMessage(messageId, oldMessage) {
     console.log(error);
     return;
   }
-async function editMessage(messageId, oldMessage) {
-
-  const newMessage =
-    prompt(
-      "Edit your message:",
-      oldMessage
-    );
-
-  if (newMessage === null) {
-    return;
-  }
-
-  const text =
-    newMessage.trim();
-
-  if (!text) {
-    return;
-  }
-
-  const {
-    data: { user }
-  } =
-    await supabaseClient.auth.getUser();
-
-  if (!user) {
-    return;
-  }
-
-  const { error } =
-    await supabaseClient
-      .from("messages")
-      .update({
-        message: text,
-        edited_at: new Date().toISOString()
-      })
-      .eq('"Id"', messageId)
-      .eq("user_id", user.id);
-
-  if (error) {
-
-    alert(
-      "Edit error:\n\n" +
-      error.message
-    );
-
-    console.log(error);
-    return;
-  }
 
   loadMessages();
 }
@@ -1301,45 +1285,6 @@ async function deleteMessage(messageId) {
     return;
   }
 
-  loadMessages();
-}
-
-
-// ==============================
-// LOAD MESSAGES
-// ==============================
-
-async function loadMessages() {
-
-  const {
-    data: { user }
-  } =
-    await supabaseClient.auth.getUser();
-
-  const { data, error } =
-    await supabaseClient
-      .from("messages")
-      .select("*")
-      .order(
-        "created_at",
-        { ascending: true }
-      );
-
-  if (error) {
-
-    console.log(
-      "LOAD MESSAGES ERROR:",
-      error
-    );
-
-    return;
-  }
-
-  console.log(
-    "MESSAGES:",
-    data
-  );
-  
   loadMessages();
 }
 
@@ -1516,71 +1461,72 @@ async function loadMessages() {
     content.appendChild(time);
 
 
-   // Edit and Delete buttons
+    // Edit and Delete buttons
 
-if (isMine) {
+    if (isMine) {
 
-  const actions =
-    document.createElement("div");
+      const actions =
+        document.createElement("div");
 
-  actions.className =
-    "message-actions";
-
-
-  // Edit button
-
-  const editButton =
-    document.createElement("button");
-
-  editButton.textContent =
-    "✏️ Edit";
-
-  editButton.className =
-    "edit-button";
-
-  editButton.onclick = () => {
-
-    editMessage(
-      item.Id,
-      item.message
-    );
-
-  };
+      actions.className =
+        "message-actions";
 
 
-  // Delete button
+      // Edit
 
-  const deleteButton =
-    document.createElement("button");
+      const editButton =
+        document.createElement("button");
 
-  deleteButton.textContent =
-    "🗑️ Delete";
+      editButton.textContent =
+        "✏️ Edit";
 
-  deleteButton.className =
-    "delete-button";
+      editButton.className =
+        "edit-button";
 
-  deleteButton.onclick = () => {
+      editButton.onclick = () => {
 
-    deleteMessage(
-      item.Id
-    );
+        editMessage(
+          item.Id,
+          item.message
+        );
 
-  };
+      };
 
 
-  actions.appendChild(
-    editButton
-  );
+      // Delete
 
-  actions.appendChild(
-    deleteButton
-  );
+      const deleteButton =
+        document.createElement("button");
 
-  content.appendChild(
-    actions
-  );
+      deleteButton.textContent =
+        "🗑️ Delete";
 
-}
+      deleteButton.className =
+        "delete-button";
+
+      deleteButton.onclick = () => {
+
+        deleteMessage(
+          item.Id
+        );
+
+      };
+
+
+      actions.appendChild(
+        editButton
+      );
+
+      actions.appendChild(
+        deleteButton
+      );
+
+      content.appendChild(
+        actions
+      );
+
+    }
+
 
     // Read receipt
 
