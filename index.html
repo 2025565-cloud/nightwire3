@@ -1049,13 +1049,40 @@ async function markMessagesAsRead() {
 
 
         // Put everything together
+content.appendChild(name);
 
-        content.appendChild(name);
+content.appendChild(bubble);
 
-        content.appendChild(bubble);
+content.appendChild(time);
 
-        content.appendChild(time);
 
+// Read receipt
+
+if (isMine) {
+
+  const receipt =
+    document.createElement("div");
+
+  receipt.className =
+    "read-receipt";
+
+  if (item.read_at) {
+
+    receipt.textContent =
+      "✓✓ Read";
+
+    receipt.style.color =
+      "#57f287";
+
+  } else {
+
+    receipt.textContent =
+      "✓ Sent";
+
+  }
+
+  content.appendChild(receipt);
+}
 
         row.appendChild(avatar);
 
