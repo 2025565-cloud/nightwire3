@@ -3710,10 +3710,10 @@ if (signal.type === "candidate") {
   }
 }
 } // closes handleCallSignal()
-  
-  startCallRealtime();
 
-  async function acceptCall() {
+startCallRealtime();
+
+async function acceptCall() {
   if (!currentCallId || !peerConnection || !localStream) {
     console.log("No incoming call to accept.");
     return;
