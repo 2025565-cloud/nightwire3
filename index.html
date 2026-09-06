@@ -1687,40 +1687,12 @@ async function loadMessages() {
   } =
     await supabaseClient.auth.getUser();
 
+  // Get messages
   const { data, error } =
-  await supabaseClient
-    .from("messages")
-    .select("*")
-    .order("created_at", { ascending: true });
-
-if (error) {
-  console.log("Message load error:", error);
-  return;
-}
-
-
-// Get all user profiles
-const { data: profiles, error: profilesError } =
-  await supabaseClient
-    .from("profiles")
-    .select("*");
-
-if (profilesError) {
-  console.log("Profile load error:", profilesError);
-}
-
-
-// Make a profile lookup
-const profileMap = {};
-
-(profiles || []).forEach(profile => {
-  profileMap[profile.id] = profile;
-});
-  
-      .order(
-        "created_at",
-        { ascending: true }
-      );
+    await supabaseClient
+      .from("messages")
+      .select("*")
+      .order("created_at", { ascending: true });
 
   if (error) {
 
@@ -1732,10 +1704,36 @@ const profileMap = {};
     return;
   }
 
+  // Get all user profiles
+  const { data: profiles, error: profilesError } =
+    await supabaseClient
+      .from("profiles")
+      .select("*");
+
+  if (profilesError) {
+
+    console.log(
+      "PROFILE LOAD ERROR:",
+      profilesError
+    );
+
+  }
+
+  // Make a profile lookup
+  const profileMap = {};
+
+  (profiles || []).forEach(profile => {
+
+    profileMap[profile.id] = profile;
+
+  });
+
+
   const container =
     document.getElementById("messages");
 
   container.innerHTML = "";
+
 
   data.forEach(item => {
 
@@ -1751,7 +1749,27 @@ const profileMap = {};
       (isMine ? " mine" : "");
 
 
-    // Avatar
+    // ==============================
+    // PROFILE
+    // ==============================
+
+    const profile =
+      profileMap[item.user_id];
+
+    const username =
+      profile?.username ||
+      item.username ||
+      "User";
+
+    const avatarUrl =
+      profile?.avatar_url ||
+      item.avatar_url ||
+      null;
+
+
+    // ==============================
+    // AVATAR
+    // ==============================
 
     const avatar =
       document.createElement("div");
@@ -1759,21 +1777,20 @@ const profileMap = {};
     avatar.className =
       "avatar";
 
-    const username =
-      item.username || "User";
-
-    if (item.avatar_url) {
+    if (avatarUrl) {
 
       const image =
         document.createElement("img");
 
       image.src =
-        item.avatar_url;
+        avatarUrl;
 
       image.alt =
         username;
 
-      avatar.appendChild(image);
+      avatar.appendChild(
+        image
+      );
 
     } else {
 
@@ -1785,7 +1802,9 @@ const profileMap = {};
     }
 
 
-    // Content
+    // ==============================
+    // CONTENT
+    // ==============================
 
     const content =
       document.createElement("div");
@@ -1794,7 +1813,9 @@ const profileMap = {};
       "message-content";
 
 
-    // Username
+    // ==============================
+    // USERNAME
+    // ==============================
 
     const name =
       document.createElement("div");
@@ -1806,7 +1827,9 @@ const profileMap = {};
       username;
 
 
-    // Message bubble
+    // ==============================
+    // MESSAGE
+    // ==============================
 
     const bubble =
       document.createElement("div");
@@ -1824,10 +1847,14 @@ const profileMap = {};
     text.textContent =
       item.message || "";
 
-    bubble.appendChild(text);
+    bubble.appendChild(
+      text
+    );
 
 
-    // Edited label
+    // ==============================
+    // EDITED LABEL
+    // ==============================
 
     if (item.edited_at) {
 
@@ -1840,12 +1867,16 @@ const profileMap = {};
       edited.className =
         "edited-label";
 
-      text.appendChild(edited);
+      text.appendChild(
+        edited
+      );
 
     }
 
 
-    // Time
+    // ==============================
+    // TIME
+    // ==============================
 
     const time =
       document.createElement("div");
@@ -1864,12 +1895,22 @@ const profileMap = {};
         );
 
 
-    content.appendChild(name);
-    content.appendChild(bubble);
-    content.appendChild(time);
+    content.appendChild(
+      name
+    );
+
+    content.appendChild(
+      bubble
+    );
+
+    content.appendChild(
+      time
+    );
 
 
-    // Edit and Delete buttons
+    // ==============================
+    // EDIT + DELETE
+    // ==============================
 
     if (isMine) {
 
@@ -1879,8 +1920,6 @@ const profileMap = {};
       actions.className =
         "message-actions";
 
-
-      // Edit button
 
       const editButton =
         document.createElement("button");
@@ -1900,8 +1939,6 @@ const profileMap = {};
 
       };
 
-
-      // Delete button
 
       const deleteButton =
         document.createElement("button");
@@ -1936,7 +1973,9 @@ const profileMap = {};
     }
 
 
-    // Read receipt
+    // ==============================
+    // READ RECEIPT
+    // ==============================
 
     if (isMine) {
 
@@ -1968,11 +2007,17 @@ const profileMap = {};
     }
 
 
-    row.appendChild(avatar);
+    row.appendChild(
+      avatar
+    );
 
-    row.appendChild(content);
+    row.appendChild(
+      content
+    );
 
-    container.appendChild(row);
+    container.appendChild(
+      row
+    );
 
   });
 
@@ -1980,6 +2025,7 @@ const profileMap = {};
   container.scrollTop =
     container.scrollHeight;
 }
+    
     // ==============================
     // SHOW CHAT
     // ==============================
