@@ -3012,7 +3012,9 @@ async function loadPrivateUsers() {
   userId,
   username
 ) {
-
+      
+startPrivateRealtime();
+      
   currentPrivateUser = {
     id: userId,
     username: username
@@ -3186,6 +3188,38 @@ async function sendPrivateMessage() {
 
   await loadPrivateMessages();
 
+}
+    let privateRealtimeChannel = null;
+
+function startPrivateRealtime() {
+
+  if (privateRealtimeChannel) {
+    supabaseClient.removeChannel(
+      privateRealtimeChannel
+    );
+  }
+
+  privateRealtimeChannel =
+    supabaseClient
+      .channel("private-messages-live")
+
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "private_messages"
+        },
+        async () => {
+
+          if (currentPrivateUser) {
+            await loadPrivateMessages();
+          }
+
+        }
+      )
+
+      .subscribe();
 }
  
   </script>
