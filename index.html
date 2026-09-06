@@ -821,6 +821,26 @@ body {
 .delete-button:hover {
   color: #ed4245;
 }
+    .reaction-bar {
+  display: flex;
+  gap: 4px;
+  margin-top: 6px;
+}
+
+.reaction-button {
+  background: #2b2d31;
+  border: 1px solid #40444b;
+  border-radius: 8px;
+  padding: 4px 7px;
+  cursor: pointer;
+  font-size: 15px;
+  transition: 0.15s;
+}
+
+.reaction-button:hover {
+  transform: scale(1.15);
+  background: #40444b;
+}
     
   </style>
 </head>
@@ -1946,7 +1966,54 @@ const avatarUrl =
       time
     );
 
+// ==============================
+// REACTIONS
+// ==============================
 
+const reactionBar =
+  document.createElement("div");
+
+reactionBar.className =
+  "reaction-bar";
+
+const reactions = [
+  "❤️",
+  "😂",
+  "👍",
+  "😮",
+  "😢"
+];
+
+reactions.forEach(reaction => {
+
+  const reactionButton =
+    document.createElement("button");
+
+  reactionButton.textContent =
+    reaction;
+
+  reactionButton.className =
+    "reaction-button";
+
+  reactionButton.onclick = () => {
+
+    addReaction(
+      item.Id,
+      reaction
+    );
+
+  };
+
+  reactionBar.appendChild(
+    reactionButton
+  );
+
+});
+
+content.appendChild(
+  reactionBar
+);
+    
     // ==============================
     // EDIT + DELETE
     // ==============================
@@ -2212,6 +2279,43 @@ document
 
     }
   );
+
+    async function addReaction(
+  messageId,
+  reaction
+) {
+
+  const {
+    data: { user }
+  } =
+    await supabaseClient.auth.getUser();
+
+  if (!user) {
+    return;
+  }
+
+  const { error } =
+    await supabaseClient
+      .from("message_reactions")
+      .insert({
+        message_id: messageId,
+        user_id: user.id,
+        reaction: reaction
+      });
+
+  if (error) {
+
+    console.log(
+      "Reaction error:",
+      error
+    );
+
+    return;
+  }
+
+  loadMessages();
+}
+    
   </script>
 
 </body>
