@@ -893,6 +893,53 @@ async function markMessagesAsRead() {
     );
   }
 }
+    async function editMessage(messageId, oldMessage) {
+
+  const newMessage =
+    prompt("Edit your message:", oldMessage);
+
+  if (newMessage === null) {
+    return;
+  }
+
+  const text =
+    newMessage.trim();
+
+  if (!text) {
+    return;
+  }
+
+  const {
+    data: { user }
+  } =
+    await supabaseClient.auth.getUser();
+
+  if (!user) {
+    return;
+  }
+
+  const { error } =
+    await supabaseClient
+      .from("messages")
+      .update({
+        message: text,
+        edited_at: new Date().toISOString()
+      })
+      .eq("id", messageId)
+      .eq("user_id", user.id);
+
+  if (error) {
+    alert(
+      "Edit error:\n\n" +
+      error.message
+    );
+
+    console.log(error);
+    return;
+  }
+
+  loadMessages();
+}
     async function loadMessages() {
 
       const {
