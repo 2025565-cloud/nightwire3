@@ -1108,6 +1108,33 @@ content.appendChild(bubble);
 content.appendChild(time);
 
 
+// Edit button
+
+if (isMine) {
+
+  const editButton =
+    document.createElement("button");
+
+  editButton.textContent =
+    "✏️ Edit";
+
+  editButton.className =
+    "edit-button";
+
+  editButton.onclick = () => {
+    editMessage(
+      item.id,
+      item.message
+    );
+  };
+
+  content.appendChild(editButton);
+}
+
+
+// Read receipt
+
+
 // Read receipt
 
 if (isMine) {
