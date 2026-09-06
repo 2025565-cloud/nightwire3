@@ -3623,8 +3623,10 @@ async function startCallRealtime() {
       (error?.message || "No error message provided")
     );
   }
-});
-  
+      });
+
+} // closes startCallRealtime()
+
 async function handleCallSignal(signal) {
   const {
     data: { user }
