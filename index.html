@@ -866,7 +866,23 @@ async function sendMessage() {
 
   loadMessages();
 }
+if (error) {
+  alert(
+    "ERROR:\n\n" +
+    error.message
+  );
 
+  console.log(error);
+  return;
+}
+
+input.value = "";
+
+clearTimeout(typingTimeout);
+
+setTyping(false);
+
+loadMessages();
 
 async function markMessagesAsRead() {
 
