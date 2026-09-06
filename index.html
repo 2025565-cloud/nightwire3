@@ -3612,11 +3612,19 @@ async function startCallRealtime() {
           await handleCallSignal(payload.new);
         }
       )
-      .subscribe(status => {
-        alert("📡 CALL REALTIME STATUS: " + status);
-      });
-}
-    
+     .subscribe((status, error) => {
+  if (status === "SUBSCRIBED") {
+    alert("📡 CALL REALTIME STATUS: SUBSCRIBED");
+  } else {
+    alert(
+      "📡 REALTIME ERROR:\n\n" +
+      status +
+      "\n\n" +
+      (error?.message || "No error message provided")
+    );
+  }
+});
+  
 async function handleCallSignal(signal) {
   const {
     data: { user }
