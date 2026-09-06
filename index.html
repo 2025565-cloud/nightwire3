@@ -1073,12 +1073,27 @@ async function markMessagesAsRead() {
         text.className =
           "message-text";
 
-        text.textContent =
-          item.message || "";
+        ttext.textContent =
+  item.message || "";
+
+bubble.appendChild(text);
 
 
-        bubble.appendChild(text);
+// Edited label
 
+if (item.edited_at) {
+
+  const edited =
+    document.createElement("span");
+
+  edited.textContent =
+    " (edited)";
+
+  edited.className =
+    "edited-label";
+
+  text.appendChild(edited);
+}
 
         // Time
 
