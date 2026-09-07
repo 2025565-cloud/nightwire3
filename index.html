@@ -3529,183 +3529,251 @@ function closePrivateChats() {
 
 async function loadPrivateUsers() {
 
-  const userList =
-    document.getElementById("privateUserList");
+  const userList = document.getElementById("privateUserList");
 
-  userList.innerHTML =
-    "Loading friends...";
+  userList.innerHTML = "Loading...";
 
   const {
     data: { user }
-  } =
-    await supabaseClient.auth.getUser();
+  } = await supabaseClient.auth.getUser();
 
   if (!user) {
-    userList.textContent =
-      "You need to log in first.";
+    userList.textContent = "You need to log in first.";
     return;
   }
 
+  // =========================
+  // GET FRIENDS
+  // =========================
 
-  // ==========================================
-  // FRIEND REQUESTS
-  // ==========================================
-
-  const {
-    data: requests,
-    error: requestError
-  } =
-    await supabaseClient
-      .from("friend_requests")
-      .select(`
-        id,
-        requester_id,
-        receiver_id,
-        status
-      `)
-      .eq("receiver_id", user.id)
-      .eq("status", "pending");
-
-
-  if (requestError) {
-
-    console.log(
-      "Friend request error:",
-      requestError
-    );
-
-  }
-
-
-  // ==========================================
-  // GET FRIENDSHIPS
-  // ==========================================
-
-  const {
-    data: friendships,
-    error: friendshipError
-  } =
+  const { data: friendships, error: friendshipError } =
     await supabaseClient
       .from("friendships")
       .select("friend_id")
       .eq("user_id", user.id);
 
-
   if (friendshipError) {
+    console.log(friendshipError);
+    userList.textContent = "Could not load friends.";
+    return;
+  }
 
-    console.log(
-      "Friendship error:",
-      friendshipError
-    );
+  const friendIds =
+    (friendships || []).map(friend => friend.friend_id);
 
-    userList.textContent =
-      "Could not load friends.";
 
+  // =========================
+  // GET ALL USERS
+  // =========================
+
+  const { data: profiles, error: profileError } =
+    await supabaseClient
+      .from("profiles")
+      .select("id, username, avatar_url")
+      .neq("id", user.id)
+      .order("username");
+
+  if (profileError) {
+    console.log(profileError);
+    userList.textContent = "Could not load users.";
     return;
   }
 
 
-  const friendIds =
-    (friendships || []).map(
-      friendship => friendship.friend_id
-    );
+  // =========================
+  // GET SENT REQUESTS
+  // =========================
+
+  const { data: sentRequests } =
+    await supabaseClient
+      .from("friend_requests")
+      .select("receiver_id, status")
+      .eq("requester_id", user.id)
+      .eq("status", "pending");
 
 
-  // ==========================================
-  // GET FRIEND PROFILES
-  // ==========================================
+  // =========================
+  // GET RECEIVED REQUESTS
+  // =========================
 
-  let friends = [];
+  const { data: receivedRequests } =
+    await supabaseClient
+      .from("friend_requests")
+      .select("id, requester_id, status")
+      .eq("receiver_id", user.id)
+      .eq("status", "pending");
 
-  if (friendIds.length > 0) {
-
-    const {
-      data: friendProfiles,
-      error: profileError
-    } =
-      await supabaseClient
-        .from("profiles")
-        .select("id, username, avatar_url")
-        .in("id", friendIds)
-        .order("username");
-
-    if (profileError) {
-
-      console.log(
-        "Friend profile error:",
-        profileError
-      );
-
-    } else {
-
-      friends =
-        friendProfiles || [];
-
-    }
-  }
-
-
-  // ==========================================
-  // BUILD PRIVATE PANEL
-  // ==========================================
 
   userList.innerHTML = "";
 
 
-  // ==========================================
-  // FRIEND REQUESTS SECTION
-  // ==========================================
+  // =========================
+  // ADD FRIENDS
+  // =========================
 
-  const requestTitle =
-    document.createElement("h3");
+  const addTitle = document.createElement("h3");
+  addTitle.textContent = "➕ Add Friends";
+  addTitle.style.margin = "5px 0 10px";
 
-  requestTitle.textContent =
-    "👥 Friend Requests";
-
-  requestTitle.style.margin =
-    "5px 0 10px";
-
-  userList.appendChild(
-    requestTitle
-  );
+  userList.appendChild(addTitle);
 
 
-  if (!requests || requests.length === 0) {
+  const usersYouCanAdd = (profiles || []).filter(profile => {
 
-    const noRequests =
-      document.createElement("div");
+    // Already friends
+    if (friendIds.includes(profile.id)) {
+      return false;
+    }
 
-    noRequests.textContent =
-      "No pending requests.";
+    // Already sent request
+    if (
+      sentRequests &&
+      sentRequests.some(request =>
+        request.receiver_id === profile.id
+      )
+    ) {
+      return false;
+    }
 
-    noRequests.style.color =
-      "#8f96a3";
+    // They already sent you a request
+    if (
+      receivedRequests &&
+      receivedRequests.some(request =>
+        request.requester_id === profile.id
+      )
+    ) {
+      return false;
+    }
 
-    noRequests.style.fontSize =
-      "13px";
+    return true;
+  });
 
-    noRequests.style.marginBottom =
-      "15px";
 
-    userList.appendChild(
-      noRequests
-    );
+  if (usersYouCanAdd.length === 0) {
+
+    const none = document.createElement("div");
+
+    none.textContent = "No users available to add.";
+
+    none.style.color = "#8f96a3";
+    none.style.fontSize = "13px";
+    none.style.marginBottom = "15px";
+
+    userList.appendChild(none);
 
   } else {
 
-    for (const request of requests) {
+    usersYouCanAdd.forEach(profile => {
 
-      const requestBox =
-        document.createElement("div");
+      const button = document.createElement("button");
 
-      requestBox.className =
-        "private-user-button";
+      button.className = "private-user-button";
 
-      requestBox.style.cursor =
-        "default";
+      const avatar = document.createElement("img");
+
+      avatar.src =
+        profile.avatar_url ||
+        "https://via.placeholder.com/40";
+
+      avatar.className = "private-user-avatar";
 
 
-      const requesterProfile =
+      const name = document.createElement("span");
+
+      name.textContent =
+        profile.username || "Unknown User";
+
+
+      const addButton = document.createElement("button");
+
+      addButton.textContent = "➕";
+
+      addButton.title = "Add Friend";
+
+      addButton.style.marginLeft = "auto";
+
+      addButton.style.background = "#5865f2";
+      addButton.style.color = "white";
+      addButton.style.border = "none";
+      addButton.style.borderRadius = "6px";
+      addButton.style.padding = "6px 9px";
+      addButton.style.cursor = "pointer";
+
+
+      addButton.onclick = async (event) => {
+
+        event.stopPropagation();
+
+        const { error } =
+          await supabaseClient
+            .from("friend_requests")
+            .insert({
+              requester_id: user.id,
+              receiver_id: profile.id
+            });
+
+        if (error) {
+
+          alert(
+            "Could not send friend request:\n\n" +
+            error.message
+          );
+
+          console.log(error);
+
+          return;
+        }
+
+        alert(
+          "Friend request sent to " +
+          (profile.username || "user") +
+          "!"
+        );
+
+        await loadPrivateUsers();
+      };
+
+
+      button.appendChild(avatar);
+      button.appendChild(name);
+      button.appendChild(addButton);
+
+      userList.appendChild(button);
+
+    });
+  }
+
+
+  // =========================
+  // FRIEND REQUESTS
+  // =========================
+
+  const requestTitle = document.createElement("h3");
+
+  requestTitle.textContent = "👥 Friend Requests";
+
+  requestTitle.style.margin = "15px 0 10px";
+
+  userList.appendChild(requestTitle);
+
+
+  if (!receivedRequests || receivedRequests.length === 0) {
+
+    const none = document.createElement("div");
+
+    none.textContent = "No pending requests.";
+
+    none.style.color = "#8f96a3";
+    none.style.fontSize = "13px";
+    none.style.marginBottom = "15px";
+
+    userList.appendChild(none);
+
+  } else {
+
+    for (const request of receivedRequests) {
+
+      const { data: profile } =
         await supabaseClient
           .from("profiles")
           .select("id, username, avatar_url")
@@ -3713,186 +3781,151 @@ async function loadPrivateUsers() {
           .maybeSingle();
 
 
-      const profile =
-        requesterProfile.data;
+      const box = document.createElement("div");
+
+      box.className = "private-user-button";
+
+      box.style.cursor = "default";
 
 
-      const avatar =
-        document.createElement("img");
+      const avatar = document.createElement("img");
 
       avatar.src =
         profile?.avatar_url ||
         "https://via.placeholder.com/40";
 
-      avatar.className =
-        "private-user-avatar";
+      avatar.className = "private-user-avatar";
 
 
-      const name =
-        document.createElement("span");
+      const name = document.createElement("span");
 
       name.textContent =
-        profile?.username ||
-        "Unknown User";
+        profile?.username || "Unknown User";
 
 
-      const acceptButton =
-        document.createElement("button");
+      const acceptButton = document.createElement("button");
 
-      acceptButton.textContent =
-        "✅";
+      acceptButton.textContent = "✅";
 
-      acceptButton.title =
-        "Accept";
+      acceptButton.title = "Accept Friend Request";
 
-      acceptButton.style.marginLeft =
-        "auto";
+      acceptButton.style.marginLeft = "auto";
 
-      acceptButton.onclick =
-        async () => {
-
-          const {
-            error
-          } =
-            await supabaseClient.rpc(
-              "accept_friend_request",
-              {
-                request_id:
-                  request.id
-              }
-            );
-
-          if (error) {
-
-            alert(
-              "Could not accept request:\n\n" +
-              error.message
-            );
-
-            return;
-          }
-
-          await loadPrivateUsers();
-        };
+      acceptButton.style.background = "#5865f2";
+      acceptButton.style.color = "white";
+      acceptButton.style.border = "none";
+      acceptButton.style.borderRadius = "6px";
+      acceptButton.style.padding = "6px 9px";
+      acceptButton.style.cursor = "pointer";
 
 
-      requestBox.appendChild(
-        avatar
-      );
+      acceptButton.onclick = async () => {
 
-      requestBox.appendChild(
-        name
-      );
+        const { error } =
+          await supabaseClient.rpc(
+            "accept_friend_request",
+            {
+              request_id: request.id
+            }
+          );
 
-      requestBox.appendChild(
-        acceptButton
-      );
+        if (error) {
 
-      userList.appendChild(
-        requestBox
-      );
+          alert(
+            "Could not accept request:\n\n" +
+            error.message
+          );
+
+          console.log(error);
+
+          return;
+        }
+
+        await loadPrivateUsers();
+      };
+
+
+      box.appendChild(avatar);
+      box.appendChild(name);
+      box.appendChild(acceptButton);
+
+      userList.appendChild(box);
     }
   }
 
 
-  // ==========================================
-  // FRIENDS SECTION
-  // ==========================================
+  // =========================
+  // FRIENDS
+  // =========================
 
-  const friendTitle =
-    document.createElement("h3");
+  const friendsTitle = document.createElement("h3");
 
-  friendTitle.textContent =
-    "💬 Friends";
+  friendsTitle.textContent = "💬 Friends";
 
-  friendTitle.style.margin =
-    "10px 0";
+  friendsTitle.style.margin = "15px 0 10px";
 
-  userList.appendChild(
-    friendTitle
-  );
+  userList.appendChild(friendsTitle);
+
+
+  const friends =
+    (profiles || []).filter(profile =>
+      friendIds.includes(profile.id)
+    );
 
 
   if (friends.length === 0) {
 
-    const noFriends =
-      document.createElement("div");
+    const none = document.createElement("div");
 
-    noFriends.textContent =
-      "You don't have any friends yet.";
+    none.textContent = "You don't have any friends yet.";
 
-    noFriends.style.color =
-      "#8f96a3";
+    none.style.color = "#8f96a3";
+    none.style.fontSize = "13px";
 
-    noFriends.style.fontSize =
-      "13px";
+    userList.appendChild(none);
 
-    userList.appendChild(
-      noFriends
-    );
+  } else {
 
-    return;
+    friends.forEach(profile => {
+
+      const button = document.createElement("button");
+
+      button.className = "private-user-button";
+
+
+      const avatar = document.createElement("img");
+
+      avatar.src =
+        profile.avatar_url ||
+        "https://via.placeholder.com/40";
+
+      avatar.className = "private-user-avatar";
+
+
+      const name = document.createElement("span");
+
+      name.textContent =
+        profile.username || "Unknown User";
+
+
+      button.appendChild(avatar);
+      button.appendChild(name);
+
+
+      button.onclick = () => {
+
+        openPrivateChat(
+          profile.id,
+          profile.username || "Unknown User"
+        );
+
+      };
+
+
+      userList.appendChild(button);
+
+    });
   }
-
-
-  // ==========================================
-  // DISPLAY FRIENDS
-  // ==========================================
-
-  friends.forEach(profile => {
-
-    const button =
-      document.createElement("button");
-
-    button.className =
-      "private-user-button";
-
-
-    const avatar =
-      document.createElement("img");
-
-    avatar.src =
-      profile.avatar_url ||
-      "https://via.placeholder.com/40";
-
-    avatar.className =
-      "private-user-avatar";
-
-
-    const name =
-      document.createElement("span");
-
-    name.textContent =
-      profile.username ||
-      "Unknown User";
-
-
-    button.appendChild(
-      avatar
-    );
-
-    button.appendChild(
-      name
-    );
-
-
-    button.onclick = () => {
-
-      openPrivateChat(
-        profile.id,
-        profile.username ||
-        "Unknown User"
-      );
-
-    };
-
-
-    userList.appendChild(
-      button
-    );
-
-  });
-
 }
     async function openPrivateChat(
   userId,
