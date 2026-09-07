@@ -1677,44 +1677,36 @@ async function requestNotifications() {
 }
 
 async function uploadAvatar() {
-
-  const fileInput =
-    document.getElementById("avatarInput");
-
-  const file =
-    fileInput.files[0];
+  const fileInput = document.getElementById("avatarInput");
+  const file = fileInput.files[0];
 
   if (!file) {
-    statusText.textContent =
-      "Choose a picture first.";
+    statusText.textContent = "Choose a picture first.";
     return;
   }
 
   const {
     data: { user }
-  } =
-    await supabaseClient.auth.getUser();
+  } = await supabaseClient.auth.getUser();
 
   if (!user) {
-    statusText.textContent =
-      "You need to log in first.";
+    statusText.textContent = "You need to log in first.";
     return;
   }
 
-  const fileName =
-    user.id + "-" +
-    Date.now() + "-" +
-    file.name;
+  statusText.textContent = "Uploading picture... 📸";
 
-  const { error } =
+  const fileName =
+    user.id + "-" + Date.now() + "-" + file.name;
+
+  const { error: uploadError } =
     await supabaseClient.storage
       .from("avatars")
       .upload(fileName, file);
 
-  if (error) {
+  if (uploadError) {
     statusText.textContent =
-      "Upload error: " +
-      error.message;
+      "Upload error: " + uploadError.message;
     return;
   }
 
@@ -1726,13 +1718,35 @@ async function uploadAvatar() {
   const avatarUrl =
     publicUrlData.publicUrl;
 
-  localStorage.setItem(
-    "avatarUrl",
-    avatarUrl
-  );
+  // Save the picture URL to the user's profile
+  const { error: profileError } =
+    await supabaseClient
+      .from("profiles")
+      .update({
+        avatar_url: avatarUrl
+      })
+      .eq("id", user.id);
+
+  if (profileError) {
+    statusText.textContent =
+      "Profile picture error: " +
+      profileError.message;
+    return;
+  }
+
+  // Keep the local copy too
+  localStorage.setItem("avatarUrl", avatarUrl);
+
+  // Update the profile picture on screen
+  const profileAvatar =
+    document.getElementById("profileAvatar");
+
+  if (profileAvatar) {
+    profileAvatar.src = avatarUrl;
+  }
 
   statusText.textContent =
-    "Profile picture uploaded! 📸";
+    "Profile picture updated! 📸";
 }
  
 // ==============================
