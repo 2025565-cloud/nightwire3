@@ -1694,7 +1694,7 @@ async function uploadAvatar() {
   const file = fileInput.files[0];
 
   if (!file) {
-    statusText.textContent = "Choose a picture first.";
+    alert("Choose a picture first.");
     return;
   }
 
@@ -1703,11 +1703,11 @@ async function uploadAvatar() {
   } = await supabaseClient.auth.getUser();
 
   if (!user) {
-    statusText.textContent = "You need to log in first.";
+    alert("You need to log in first.");
     return;
   }
 
-  statusText.textContent = "Uploading picture... 📸";
+  alert("Uploading picture... 📸");
 
   const fileName =
     user.id + "-" + Date.now() + "-" + file.name;
@@ -1718,8 +1718,10 @@ async function uploadAvatar() {
       .upload(fileName, file);
 
   if (uploadError) {
-    statusText.textContent =
-      "Upload error: " + uploadError.message;
+    alert(
+      "Upload error:\n\n" +
+      uploadError.message
+    );
     return;
   }
 
@@ -1731,26 +1733,28 @@ async function uploadAvatar() {
   const avatarUrl =
     publicUrlData.publicUrl;
 
-  // Save the picture URL to the user's profile
-  const { error: profileError } =
+  console.log("Avatar URL:", avatarUrl);
+
+  const { data: profileData, error: profileError } =
     await supabaseClient
       .from("profiles")
-      .update({
+      .upsert({
+        id: user.id,
         avatar_url: avatarUrl
       })
-      .eq("id", user.id);
+      .select()
+      .single();
 
   if (profileError) {
-    statusText.textContent =
-      "Profile picture error: " +
-      profileError.message;
+    alert(
+      "Profile picture error:\n\n" +
+      profileError.message
+    );
     return;
   }
 
-  // Keep the local copy too
   localStorage.setItem("avatarUrl", avatarUrl);
 
-  // Update the profile picture on screen
   const profileAvatar =
     document.getElementById("profileAvatar");
 
@@ -1758,8 +1762,7 @@ async function uploadAvatar() {
     profileAvatar.src = avatarUrl;
   }
 
-  statusText.textContent =
-    "Profile picture updated! 📸";
+  alert("Profile picture updated! 📸");
 }
  
 // ==============================
