@@ -4188,15 +4188,60 @@ async function createPeerConnection() {
       });
   };
 
-  peerConnection.ontrack = event => {
-    const remoteVideo =
-      document.getElementById("remoteVideo");
+  peerConnection.ontrack = async event => {
 
-    if (remoteVideo) {
-      remoteVideo.srcObject = event.streams[0];
+  console.log("REMOTE TRACK RECEIVED:", event.track.kind);
+
+  const stream = event.streams[0];
+
+  const remoteVideo =
+    document.getElementById("remoteVideo");
+
+  const remoteAudio =
+    document.getElementById("remoteAudio");
+
+  if (remoteVideo) {
+    remoteVideo.srcObject = stream;
+
+    try {
+      await remoteVideo.play();
+    } catch (error) {
+      console.log(
+        "Remote video autoplay blocked:",
+        error
+      );
     }
-  };
+  }
 
+  if (remoteAudio) {
+    remoteAudio.srcObject = stream;
+
+    try {
+      await remoteAudio.play();
+
+      console.log("REMOTE AUDIO PLAYING");
+
+    } catch (error) {
+      console.log(
+        "Remote audio autoplay blocked:",
+        error
+      );
+    }
+  }
+};
+peerConnection.onconnectionstatechange = () => {
+  console.log(
+    "WEBRTC CONNECTION:",
+    peerConnection.connectionState
+  );
+};
+
+peerConnection.oniceconnectionstatechange = () => {
+  console.log(
+    "ICE CONNECTION:",
+    peerConnection.iceConnectionState
+  );
+};
   return peerConnection;
 }
 
