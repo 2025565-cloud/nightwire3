@@ -4604,7 +4604,28 @@ async function handleCallSignal(signal) {
   }
 }
 
-startCallRealtime();
+supabaseClient.auth.onAuthStateChange(
+  async (event, session) => {
+
+    if (session) {
+      console.log("Logged in — starting call realtime.");
+
+      await startCallRealtime();
+
+    } else {
+      console.log("Not logged in — call realtime stopped.");
+
+      if (callRealtimeChannel) {
+        await supabaseClient.removeChannel(
+          callRealtimeChannel
+        );
+
+        callRealtimeChannel = null;
+      }
+    }
+
+  }
+);
 
 async function acceptCall() {
   if (!currentCallId || !peerConnection || !localStream) {
