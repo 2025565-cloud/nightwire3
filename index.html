@@ -4363,6 +4363,43 @@ async function toggleCamera() {
     cameraEnabled ? "📷 Camera" : "🚫 Camera";
 }
 
+    async function enableCallAudio() {
+  const remoteAudio =
+    document.getElementById("remoteAudio");
+
+  const remoteVideo =
+    document.getElementById("remoteVideo");
+
+  if (remoteAudio) {
+    remoteAudio.muted = false;
+    remoteAudio.volume = 1;
+
+    try {
+      await remoteAudio.play();
+    } catch (error) {
+      console.log("Audio play error:", error);
+    }
+  }
+
+  if (remoteVideo) {
+    remoteVideo.muted = false;
+    remoteVideo.volume = 1;
+
+    try {
+      await remoteVideo.play();
+    } catch (error) {
+      console.log("Video play error:", error);
+    }
+  }
+
+  const soundButton =
+    document.getElementById("soundButton");
+
+  if (soundButton) {
+    soundButton.textContent = "🔊 Sound On";
+  }
+}
+    
 function endCall() {
   if (localStream) {
     localStream.getTracks().forEach(track => {
