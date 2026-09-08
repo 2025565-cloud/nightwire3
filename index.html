@@ -4432,96 +4432,177 @@ async function handleCallSignal(signal) {
 
   if (!user) return;
 
-  // Ignore signals that aren't meant for this user
-  if (
-    signal.receiver_id !== user.id &&
-    signal.caller_id !== user.id
-  ) {
-    return;
+  /*
+    IMPORTANT:
+    Only handle signals that are meant for this user.
+  */
+
+  // Ignore our own signals
+  if (signal.caller_id === user.id && signal.receiver_id !== user.id) {
+    if (signal.type === "offer") {
+      return;
+    }
   }
-if (signal.type === "offer") {
-  currentCallId = signal.call_id;
 
- currentPrivateUser = {
-  id: signal.caller_id,
-  username: signal.payload.username || "Caller"
-};
+  // =========================
+  // INCOMING OFFER
+  // =========================
+  if (signal.type === "offer") {
 
-  try {
-    const stream =
-      await navigator.mediaDevices.getUserMedia({
-        audio: true,
-        video: signal.payload.video === true
-      });
-
-    localStream = stream;
-
-    await createPeerConnection();
-
-    localStream.getTracks().forEach(track => {
-      peerConnection.addTrack(track, localStream);
-    });
-
-    const localVideo =
-      document.getElementById("localVideo");
-
-    localVideo.srcObject = localStream;
-
-    if (signal.payload.video === true) {
-      localVideo.style.display = "block";
-    } else {
-      localVideo.style.display = "none";
+    // Only the receiver should handle the offer
+    if (signal.receiver_id !== user.id) {
+      return;
     }
 
-    document.getElementById(
-      "callPanel"
-    ).style.display = "flex";
+    currentCallId = signal.call_id;
 
-    document.getElementById(
-      "callTitle"
-    ).textContent = "📞 Incoming call";
+    currentPrivateUser = {
+      id: signal.caller_id,
+      username: signal.payload.username || "Caller"
+    };
 
-    document.getElementById(
-      "incomingCallControls"
-    ).style.display = "flex";
+    try {
 
-  } catch (error) {
-    console.log("INCOMING CALL ERROR:", error);
+      const stream =
+        await navigator.mediaDevices.getUserMedia({
+          audio: true,
+          video: signal.payload.video === true
+        });
 
-    alert(
-      "Could not receive the call:\n\n" +
-      error.message
-    );
+      localStream = stream;
+
+      await createPeerConnection();
+
+      localStream.getTracks().forEach(track => {
+        peerConnection.addTrack(track, localStream);
+      });
+
+      const localVideo =
+        document.getElementById("localVideo");
+
+      localVideo.srcObject = localStream;
+
+      if (signal.payload.video === true) {
+        localVideo.style.display = "block";
+      } else {
+        localVideo.style.display = "none";
+      }
+
+      document.getElementById("callPanel").style.display =
+        "flex";
+
+      document.getElementById("callTitle").textContent =
+        signal.payload.video === true
+          ? "📹 Incoming video call"
+          : "📞 Incoming voice call";
+
+      document.getElementById(
+        "incomingCallControls"
+      ).style.display = "flex";
+
+    } catch (error) {
+
+      console.log(
+        "INCOMING CALL ERROR:",
+        error
+      );
+
+      alert(
+        "Could not receive the call:\n\n" +
+        error.message
+      );
+    }
+
+    return;
   }
 
-  return;
-}
-  
+  // =========================
+  // ANSWER
+  // =========================
   if (signal.type === "answer") {
-  if (!peerConnection) return;
 
-  await peerConnection.setRemoteDescription(
-    new RTCSessionDescription(signal.payload)
-  );
+    // Only the original caller should handle the answer
+    if (signal.caller_id !== user.id) {
+      return;
+    }
 
-  document.getElementById(
-    "callTitle"
-  ).textContent = "📞 Connected";
-}
+    if (!peerConnection) {
+      console.log(
+        "Received answer but no peer connection exists."
+      );
+      return;
+    }
 
-if (signal.type === "candidate") {
-  if (!peerConnection) return;
+    try {
 
-  try {
-    await peerConnection.addIceCandidate(
-      new RTCIceCandidate(signal.payload)
-    );
-  } catch (error) {
-    console.log("ICE candidate error:", error);
+      await peerConnection.setRemoteDescription(
+        new RTCSessionDescription(signal.payload)
+      );
+
+      document.getElementById(
+        "callTitle"
+      ).textContent = "📞 Connected";
+
+      console.log("Call answer accepted.");
+
+    } catch (error) {
+
+      console.log(
+        "ANSWER ERROR:",
+        error
+      );
+
+      alert(
+        "ANSWER ERROR:\n\n" +
+        error.message
+      );
+    }
+
+    return;
+  }
+
+  // =========================
+  // ICE CANDIDATE
+  // =========================
+  if (signal.type === "candidate") {
+
+    // Only process candidates sent TO us
+    if (signal.receiver_id !== user.id) {
+      return;
+    }
+
+    if (!peerConnection) {
+      console.log(
+        "Received ICE candidate before peer connection was ready."
+      );
+      return;
+    }
+
+    try {
+
+      // Wait until a remote description exists
+      if (!peerConnection.remoteDescription) {
+        console.log(
+          "Ignoring ICE candidate until remote description is ready."
+        );
+        return;
+      }
+
+      await peerConnection.addIceCandidate(
+        new RTCIceCandidate(signal.payload)
+      );
+
+    } catch (error) {
+
+      console.log(
+        "ICE candidate error:",
+        error
+      );
+    }
+
+    return;
   }
 }
-  
-} // closes handleCallSignal()
 
 startCallRealtime();
 
